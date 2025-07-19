@@ -221,6 +221,7 @@ def main(number_of_players: int) -> None:
 
             if not card.is_action:
                 break
+        print(f"Current card: {discard_pile[-1]}")
 
         # Now we have non-action card at the top of the discard_pile, players can
         # start the game
