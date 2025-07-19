@@ -1,0 +1,20 @@
+{
+    "python.terminal.activateEnvInCurrentTerminal": false,
+    "python.terminal.activateEnvironment": false,
+    "python.languageServer": "Pylance",
+    "python.linting.ruffEnabled": true,
+    "python.linting.enabled": true,
+    "[python]": {
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+        },
+        "editor.defaultFormatter": "charliermarsh.ruff"
+    },
+    "cSpell.words": [
+        "Alexey",
+        "genai",
+        "Lukyanov",
+        "pytest",
+        "setuptools"
+    ]
+}
