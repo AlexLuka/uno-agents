@@ -2,18 +2,22 @@
 
 from enum import Enum, unique
 from random import shuffle
-from pydantic import BaseModel
 
 
-class Player(BaseModel):
+class Player:
     """Docstring."""
 
     player_id: int
     cards: list[str]
 
+    def __init__(self, player_id: int):
+        self.player_id = player_id
+
 
 @unique
 class Colors(Enum):
+    """Class to keep colors."""
+
     R = "red"
     G = "green"
     Y = "yellow"
@@ -22,45 +26,49 @@ class Colors(Enum):
 
 
 class Card:
+    """Card object to keep track of cards and their values."""
+
     color: Colors   # also called suit
     value: int
-    type: str   #number, skip, draw two, reverse, wild, wild 4.
+    card_type: str   #number, skip, draw two, reverse, wild, wild 4.
 
-    def __init__(self, color: Colors, type: str):
+    def __init__(self, color: Colors, card_type: str) -> None:
+        """Initialize the Card object with its value."""
         self.color = color
-        self.type = type
+        self.card_type = card_type
 
         # TODO Rethink this part
         if self.color is Colors.A:
             self.value = 50
-        else:
-            if self.type in {"skip", "draw_two", "reverse"}:
+        else:  # noqa: PLR5501
+            if self.card_type in {"skip", "draw_two", "reverse"}:
                 self.value = 20
             else:
-                self.value = int(self.type)
+                self.value = int(self.card_type)
 
     def __str__(self):
-        return f"{self.type} {self.color.value}"
+        return f"{self.card_type} {self.color.value}"
 
 
-def init_deck():
-    deck = list()
+def init_deck() -> list[Card]:
+    """Function to init the deck."""
+    deck = []
 
     for color in Colors:
         if color is Colors.A:
             for _ in range(4):
-                deck.append(Card(color=color, type="wild"))
-                deck.append(Card(color=color, type="wild_draw_four"))
+                deck.append(Card(color=color, card_type="wild"))
+                deck.append(Card(color=color, card_type="wild_draw_four"))
         else:
-            deck.append(Card(color=color, type="0"))
+            deck.append(Card(color=color, card_type="0"))
             for i in range(1, 10):
-                deck.append(Card(color=color, type=i))
-                deck.append(Card(color=color, type=i))
+                deck.append(Card(color=color, card_type=i))
+                deck.append(Card(color=color, card_type=i))
 
             for _ in range(2):
-                deck.append(Card(color=color, type="skip"))
-                deck.append(Card(color=color, type="reverse"))
-                deck.append(Card(color=color, type="draw_two"))
+                deck.append(Card(color=color, card_type="skip"))
+                deck.append(Card(color=color, card_type="reverse"))
+                deck.append(Card(color=color, card_type="draw_two"))
     return deck
 
 
@@ -73,7 +81,7 @@ class Dealer:
     player_turn: int
     turn_direction: int
 
-    def __init__(self, number_of_players: int):
+    def __init__(self, number_of_players: int) -> None:
         """When we init the dealer we are going to set the game settings before the game starts."""
         # Keep the number of players
         self.number_of_players = number_of_players
@@ -113,16 +121,34 @@ class Dealer:
         2. Give each player 7 cards
         4. Since we init the round, then we do not have a winner. Therefore,
            the winner flag must be False
+
+        Return the cards of each player, draw pile, and the first card at the top.
+        If the top card is an action card, discard it until you get any non-action
+        card. Action cards are cards that do not have numbers. Non-action cards are
+        cards with numbers from 0 to 9 and one of green, blue, yellow or red colors.
         """
         self.round_start_index = (
-            0 if self.round_start_index is -1 else
+            0 if self.round_start_index == -1 else
             (self.round_start_index + 1) % self.number_of_players
         )
         self.current_round += 1
 
+        # Shuffle the deck
         shuffle(self.deck)
 
+        # Hands is a list of 7-tuples
+        hands = [[] for _ in range(self.number_of_players)]
+        for _ in range(7):
+            for j in range(self.number_of_players):
+                # Get the card from the top
+                card = self.deck.pop(0)
+
+                # Give that card to the player
+                hands[j].append(card)
+
         assert self.has_winner is False
+
+        return hands, self.deck
 
     def __str__(self) -> str:
         """Returns a game state as a string."""
@@ -150,14 +176,17 @@ def main(number_of_players: int) -> None:
     """
     # Initialize all the players. Each player is going to have a unique integer ID
     # starting from 0.
+    players = [Player(i) for i in range(number_of_players)]
 
     # Create a dealer
     dealer = Dealer(number_of_players=number_of_players)
     print(dealer)
 
     while not dealer.has_winner:
-        dealer.init_round()
+        hands, draw_pile = dealer.init_round()
         print(dealer)
+        print(hands)
+        print(draw_pile)
 
         # Let's exit after 1 round until we make the game body here
         dealer.has_winner = True
