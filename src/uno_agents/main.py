@@ -12,6 +12,10 @@ class Player:
 
     def __init__(self, player_id: int):
         self.player_id = player_id
+        self.cards = []
+
+    def __str__(self):
+        return f"Player {self.player_id}: {', '.join(str(card) for card in self.cards)}"
 
 
 @unique
@@ -31,6 +35,7 @@ class Card:
     color: Colors   # also called suit
     value: int
     card_type: str   #number, skip, draw two, reverse, wild, wild 4.
+    is_action: bool
 
     def __init__(self, color: Colors, card_type: str) -> None:
         """Initialize the Card object with its value."""
@@ -40,19 +45,27 @@ class Card:
         # TODO Rethink this part
         if self.color is Colors.A:
             self.value = 50
+            self.is_action = True
         else:  # noqa: PLR5501
             if self.card_type in {"skip", "draw_two", "reverse"}:
                 self.value = 20
+                self.is_action = True
             else:
                 self.value = int(self.card_type)
+                self.is_action = False
 
     def __str__(self):
         return f"{self.card_type} {self.color.value}"
 
 
+class Deck(list):
+    def __str__(self):
+        return f"[{', '.join(map(str, self))}]"
+
+
 def init_deck() -> list[Card]:
     """Function to init the deck."""
-    deck = []
+    deck = Deck()
 
     for color in Colors:
         if color is Colors.A:
@@ -81,15 +94,19 @@ class Dealer:
     player_turn: int
     turn_direction: int
 
-    def __init__(self, number_of_players: int) -> None:
+    def __init__(self, players: list[Player]) -> None:
         """When we init the dealer we are going to set the game settings before the game starts."""
+        self.players = players
+
         # Keep the number of players
-        self.number_of_players = number_of_players
+        self.number_of_players = len(players)
 
         # Determine the order of turns in each game
-        self.turn_order = list(range(number_of_players))
-        print(f"turn_order = {self.turn_order}")
-        shuffle(self.turn_order)
+        # self.turn_order = list(range(self.number_of_players))
+        shuffle(players)
+        self.turn_order = [player.player_id for player in players]
+        # print(f"turn_order = {self.turn_order}")
+        # shuffle(self.turn_order)
         print(f"turn_order = {self.turn_order}")
 
         self.turn_direction = 1 # OR -1
@@ -137,18 +154,19 @@ class Dealer:
         shuffle(self.deck)
 
         # Hands is a list of 7-tuples
-        hands = [[] for _ in range(self.number_of_players)]
+        # hands = [[] for _ in range(self.number_of_players)]
         for _ in range(7):
             for j in range(self.number_of_players):
                 # Get the card from the top
                 card = self.deck.pop(0)
 
                 # Give that card to the player
-                hands[j].append(card)
+                # hands[j].append(card)
+                self.players[j].cards.append(card)
 
         assert self.has_winner is False
 
-        return hands, self.deck
+        return self.deck
 
     def __str__(self) -> str:
         """Returns a game state as a string."""
@@ -179,14 +197,21 @@ def main(number_of_players: int) -> None:
     players = [Player(i) for i in range(number_of_players)]
 
     # Create a dealer
-    dealer = Dealer(number_of_players=number_of_players)
+    dealer = Dealer(players=players)
     print(dealer)
 
     while not dealer.has_winner:
-        hands, draw_pile = dealer.init_round()
+        # Initialize the round
+        draw_pile = dealer.init_round()
+        discard_pile = []
+
         print(dealer)
-        print(hands)
-        print(draw_pile)
+        # print(hands)
+        print(f"draw_pile={draw_pile}")
+        print()
+
+        for player in players:
+            print(player)
 
         # Let's exit after 1 round until we make the game body here
         dealer.has_winner = True
