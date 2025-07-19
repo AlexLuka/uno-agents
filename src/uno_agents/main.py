@@ -76,10 +76,13 @@ class Dealer:
     def __init__(self, number_of_players: int):
         """When we init the dealer we are going to set the game settings before the game starts."""
         # Keep the number of players
-        self.number_of_player = number_of_players
+        self.number_of_players = number_of_players
 
         # Determine the order of turns in each game
-        self.turn_order = shuffle(list(range(number_of_players)))
+        self.turn_order = list(range(number_of_players))
+        print(f"turn_order = {self.turn_order}")
+        shuffle(self.turn_order)
+        print(f"turn_order = {self.turn_order}")
 
         self.turn_direction = 1 # OR -1
 
@@ -90,13 +93,16 @@ class Dealer:
         # players are not going to change over time, but each round the index is
         # going to shift by 1. We set it to None in the beginning of the game to
         # initialize in the beginning of the round.
-        self.round_start_index = None
+        self.round_start_index = -1
 
         # This is the deck
         self.deck = init_deck()
 
         # Flag that we have a winner
         self.has_winner = False
+
+        # Round counter
+        self.current_round = 0
 
     def init_round(self) -> None:
         """Method to init the round.
@@ -109,9 +115,10 @@ class Dealer:
            the winner flag must be False
         """
         self.round_start_index = (
-            0 if self.round_start_index is None else
-            (self.round_start_index + 1) % self.number_of_player
+            0 if self.round_start_index is -1 else
+            (self.round_start_index + 1) % self.number_of_players
         )
+        self.current_round += 1
 
         shuffle(self.deck)
 
@@ -119,9 +126,12 @@ class Dealer:
 
     def __str__(self) -> str:
         """Returns a game state as a string."""
-        return f"""Game state:
+        return f"""Game state: round {self.current_round}
         Number of cards: {len(self.deck)}
-        Player order: {self.turn_order}
+        Number of players: {self.number_of_players}
+        Round start index: {self.round_start_index}
+        Players order: {self.turn_order}
+        Player to start the round: {"Unknown" if self.round_start_index < 0 else self.turn_order[self.round_start_index]}
         Game direction: {self.turn_direction}
         {", ".join(str(card) for card in self.deck)}
         """
