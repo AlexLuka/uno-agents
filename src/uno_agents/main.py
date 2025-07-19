@@ -129,7 +129,7 @@ class Dealer:
         # Round counter
         self.current_round = 0
 
-    def init_round(self) -> None:
+    def init_round(self) -> Deck[Card]:
         """Method to init the round.
 
         Before each round begins we need to do the following.
@@ -212,6 +212,20 @@ def main(number_of_players: int) -> None:
 
         for player in players:
             print(player)
+
+        #
+        # Pick card from the top of a draw pile until non-action card appears
+        while True:
+            card = draw_pile.pop(0)
+            discard_pile.append(card)
+
+            if not card.is_action:
+                break
+
+        # Now we have non-action card at the top of the discard_pile, players can
+        # start the game
+
+        # TODO continue game here with players.
 
         # Let's exit after 1 round until we make the game body here
         dealer.has_winner = True
