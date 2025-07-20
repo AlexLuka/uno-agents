@@ -1,14 +1,20 @@
 """Module with main entrypoint for the agents."""
 
+from abc import ABC
 from enum import Enum, unique
-from random import shuffle
+from random import shuffle, choice
 
 
-class Player:
+class BasePlayer(ABC):
+    def play_card(self):
+        pass
+
+
+class GeneralPlayer(BasePlayer):
     """Docstring."""
 
     player_id: int
-    cards: list[str]
+    cards: list["Card"]
 
     def __init__(self, player_id: int):
         self.player_id = player_id
@@ -16,6 +22,59 @@ class Player:
 
     def __str__(self):
         return f"Player {self.player_id}: {', '.join(str(card) for card in self.cards)}"
+
+    def play_card(self, current_card: "Card"):
+        """Method to select a card to play.
+
+        Returns:
+            Card to play or None if no card to pick. Also must say something of play wild card.
+        """
+        # List all the cards that are currently playable
+        playable_cards = []
+        colors_need = {
+            Colors.R: 0,
+            Colors.G: 0,
+            Colors.Y: 0,
+            Colors.B: 0,
+            Colors.A: 0,
+        }
+
+        for i, card in enumerate(self.cards):
+            if (card.color is Colors.A) or (card.color is current_card.color) or (card.card_type == current_card.card_type):
+                playable_cards.append((card, i))
+
+            colors_need[card.color] += 1
+        print(f"Player {self.player_id} has following playable cards: {playable_cards}")
+
+        if len(playable_cards) == 0:
+            # This means that we do not have a playable cards
+            return None
+
+        # Select one playable card that cost most points
+        selected_card_index = -1
+        max_points = -1
+
+        for card, ind in playable_cards:
+            if card.value > max_points:
+                max_points = card.value
+                selected_card_index = ind
+
+        # Selected card index is going to be defined anyway
+        card  = self.cards.pop(selected_card_index)
+
+        if card.card_type in {"wild", "wild_draw_four"}:
+            # Select a color to call
+            # TODO
+            color_need, _ = max(colors_need.items(), key=lambda x: x[1])
+            if color_need is Colors.A:
+                color_need = choice([Colors.B, Colors.Y, Colors.G, Colors.R])
+
+            # Here we assigned a color to the wild card. It must be reset when shuffle!
+            card.color = color_need
+
+            return card
+
+        return card
 
 
 @unique
@@ -57,6 +116,9 @@ class Card:
     def __str__(self):
         return f"{self.card_type} {self.color.value}"
 
+    def __repr__(self):
+        return f"{self.card_type} {self.color.value}"
+
 
 class Deck(list):
     def __str__(self):
@@ -94,7 +156,7 @@ class Dealer:
     player_turn: int
     turn_direction: int
 
-    def __init__(self, players: list[Player]) -> None:
+    def __init__(self, players: list[GeneralPlayer]) -> None:
         """When we init the dealer we are going to set the game settings before the game starts."""
         self.players = players
 
@@ -104,7 +166,7 @@ class Dealer:
         # Determine the order of turns in each game
         # self.turn_order = list(range(self.number_of_players))
         shuffle(players)
-        self.turn_order = [player.player_id for player in players]
+        self.turn_order = [player.player_id for player in players]          # TODO do I need this???
         # print(f"turn_order = {self.turn_order}")
         # shuffle(self.turn_order)
         print(f"turn_order = {self.turn_order}")
@@ -119,6 +181,9 @@ class Dealer:
         # going to shift by 1. We set it to None in the beginning of the game to
         # initialize in the beginning of the round.
         self.round_start_index = -1
+
+        # This is the actual index of a player who must place a card to discard pile now
+        self.current_player_index = -1
 
         # This is the deck
         self.deck = init_deck()
@@ -148,6 +213,7 @@ class Dealer:
             0 if self.round_start_index == -1 else
             (self.round_start_index + 1) % self.number_of_players
         )
+        self.current_player_index = self.round_start_index
         self.current_round += 1
 
         # Shuffle the deck
@@ -194,7 +260,7 @@ def main(number_of_players: int) -> None:
     """
     # Initialize all the players. Each player is going to have a unique integer ID
     # starting from 0.
-    players = [Player(i) for i in range(number_of_players)]
+    players = [GeneralPlayer(i) for i in range(number_of_players)]
 
     # Create a dealer
     dealer = Dealer(players=players)
@@ -221,12 +287,108 @@ def main(number_of_players: int) -> None:
 
             if not card.is_action:
                 break
-        print(f"Current card: {discard_pile[-1]}")
+        print(f"First discard card: {discard_pile[-1]}")
 
         # Now we have non-action card at the top of the discard_pile, players can
         # start the game
 
-        # TODO continue game here with players.
+        # TODO continue game here with players. Here the round starts.
+        # We are going to play the game while all the players have cards.
+        round_ended = False
+        action_played = False
+        while not round_ended:
+            # Play the game
+            # The first player to move is player under round_start_index
+            print()
+
+            # This is the player who must make the move
+            player_to_move = players[dealer.current_player_index]
+            print(f"Player {player_to_move.player_id} is moving")
+
+            active_card = discard_pile[-1]
+            print(f"Current active card: {active_card}")
+
+            # make a move depending on the card at the top of discard pile
+            # if active_card.is_action:
+            if active_card.card_type == "skip" and action_played:
+                print("Skipping the move")
+                action_played = False
+            elif active_card.card_type == "draw_two" and action_played:
+                print("Drawing two cards")
+                # But we must draw cards only if it is the game against current player.
+                for _ in range(2):
+                    draw_card = draw_pile.pop(0)
+                    player_to_move.cards.append(draw_card)
+                action_played = False
+            elif active_card.card_type == "wild_draw_four" and action_played:
+                print("Drawing four cards")
+                for _ in range(4):
+                    draw_card = draw_pile.pop(0)
+                    player_to_move.cards.append(draw_card)
+                action_played = False
+            else:
+                print(f"Playing for the {active_card}")
+                # If card type "wild" it must have assigned color. Therefore
+                # we can place any color on top
+                # If it reverse, then also must be played by color.
+                # If it is number card, must play card
+                card_to_play = player_to_move.play_card(active_card)
+
+                if card_to_play is None:
+                    print("Drawing a card")
+                    draw_card = draw_pile.pop(0)
+                    player_to_move.cards.append(draw_card)
+                    print(f"Player {player_to_move.player_id} draw {draw_card} card")
+                    card_to_play = player_to_move.play_card(active_card)
+
+                if card_to_play is None:
+                    # Move to the next player
+                    print(f"Player {player_to_move.player_id} still has no cards to play, moving to the next player")
+                else:
+                    discard_pile.append(card_to_play)
+                    print(f"Player {player_to_move.player_id} played {card_to_play}")
+
+                    # Here card to play is not None for sure
+                    if card_to_play.card_type == "reverse":
+                        dealer.turn_direction *= -1
+
+                    elif card_to_play.card_type in {"skip", "draw_two", "wild_draw_four"}:
+                        action_played = True
+
+            # Flag to indicate whether player has moved
+            # has_moved = False
+
+            # What player must do:
+            #   Player must do one of the following:
+            #       Either place one of the cards on hands to a discard pile
+            #       Pick a card from the draw deck
+            for player in players:
+                print(f"\t{player}")
+
+            # Check the number of cards on players hands
+            # If number of cards drop to 0 then stop this loop
+            # for player in players:
+            #     if len(player.cards) == 0:
+            #         round_ended = True
+            #         break
+            if len(player_to_move.cards) == 0:
+                round_ended = True  # TODO probably redundant, remove later if yes
+                break
+
+            # Move to the next player
+            # If we have 5 players this is going to work like following:
+            #   Normal turn (turn_direction = 1):
+            #       current_player_index = 0 -> (0 + 1) % 5 = 1
+            #       current_player_index = 2 -> (2 + 1) % 5 = 3
+            #       current_player_index = 4 -> (4 + 1) % 5 = 0
+            #   Reversed turn (turn_direction = -1):
+            #       current_player_index = 0 -> (0 - 1) % 5 = 4
+            #       current_player_index = 1 -> (1 - 1) % 5 = 0
+            #       current_player_index = 4 -> (4 - 1) % 5 = 3
+            dealer.current_player_index = (dealer.current_player_index + dealer.turn_direction) % dealer.number_of_players
+
+        # Count points here
+        print("counting points")
 
         # Let's exit after 1 round until we make the game body here
         dealer.has_winner = True
