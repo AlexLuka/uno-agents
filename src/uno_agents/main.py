@@ -2,7 +2,7 @@
 
 from abc import ABC
 from enum import Enum, unique
-from random import shuffle, choice
+from random import choice, shuffle
 
 
 class BasePlayer(ABC):
@@ -113,15 +113,20 @@ class Card:
                 self.value = int(self.card_type)
                 self.is_action = False
 
-    def __str__(self):
+    def __str__(self) -> str:
+        """Method to get human-readable representation of a card."""
         return f"{self.card_type} {self.color.value}"
 
-    def __repr__(self):
-        return f"{self.card_type} {self.color.value}"
+    def __repr__(self) -> str:
+        """Method to get unambiguous representation."""
+        return f"Card(type={self.card_type},color={self.color.value},value={self.value})"
 
 
 class Deck(list):
-    def __str__(self):
+    """Class to store deck of cards as a list."""
+
+    def __str__(self) -> str:
+        """Method to get human-readable representation of a deck."""
         return f"[{', '.join(map(str, self))}]"
 
 
