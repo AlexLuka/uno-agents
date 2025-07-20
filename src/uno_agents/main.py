@@ -394,7 +394,9 @@ def main(number_of_players: int) -> None:
             #       current_player_index = 0 -> (0 - 1) % 5 = 4
             #       current_player_index = 1 -> (1 - 1) % 5 = 0
             #       current_player_index = 4 -> (4 - 1) % 5 = 3
-            dealer.current_player_index = (dealer.current_player_index + dealer.turn_direction) % dealer.number_of_players
+            dealer.current_player_index = (
+                (dealer.current_player_index + dealer.turn_direction) % dealer.number_of_players
+            )
 
         # Count points here
         print("counting points")
