@@ -2,6 +2,9 @@
 
 
 from uno_agents.classes.player import Dealer, GeneralPlayer
+from uno_agents.utils.logger import init_logger
+
+logger = init_logger("")
 
 
 def main(number_of_players: int) -> None:
@@ -21,20 +24,19 @@ def main(number_of_players: int) -> None:
 
     # Create a dealer
     dealer = Dealer(players=players)
-    print(dealer)
+    logger.debug(dealer)
 
     while not dealer.has_winner:
         # Initialize the round
         draw_pile = dealer.init_round()
         discard_pile = []
 
-        print(dealer)
-        # print(hands)
-        print(f"draw_pile={draw_pile}")
-        print()
+        logger.debug("dealer=%s", dealer)
+        logger.debug("draw_pile=%s", draw_pile)
+        logger.info("")
 
         for player in players:
-            print(player)
+            logger.debug("player=%s", player)
 
         #
         # Pick card from the top of a draw pile until non-action card appears
@@ -44,7 +46,7 @@ def main(number_of_players: int) -> None:
 
             if not card.is_action:
                 break
-        print(f"First discard card: {discard_pile[-1]}")
+        logger.info("First discard card: %s", discard_pile[-1])
 
         # Now we have non-action card at the top of the discard_pile, players can
         # start the game
@@ -66,35 +68,37 @@ def main(number_of_players: int) -> None:
         while not round_ended:
             # Play the game
             # The first player to move is player under round_start_index
-            print()
+            dealer.current_move += 1
+            logger.info("%s", "-" * 25)
+            logger.info("Round %d, Move %d", dealer.current_round, dealer.current_move)
 
             # This is the player who must make the move
             player_to_move = players[dealer.current_player_index]
-            print(f"Player {player_to_move.player_id} is moving")
+            logger.info("Player %d is moving", player_to_move.player_id)
 
             active_card = discard_pile[-1]
-            print(f"Current active card: {active_card}")
+            logger.info("Current active card: %s", active_card)
 
             # make a move depending on the card at the top of discard pile
             # if active_card.is_action:
             if active_card.card_type == "skip" and action_played:
-                print("Skipping the move")
+                logger.info("Skipping the move")
                 action_played = False
             elif active_card.card_type == "draw_two" and action_played:
-                print("Drawing two cards")
+                logger.info("Drawing two cards")
                 # But we must draw cards only if it is the game against current player.
                 for _ in range(2):
                     draw_card = draw_pile.pop(0)
                     player_to_move.cards.append(draw_card)
                 action_played = False
             elif active_card.card_type == "wild_draw_four" and action_played:
-                print("Drawing four cards")
+                logger.info("Drawing four cards")
                 for _ in range(4):
                     draw_card = draw_pile.pop(0)
                     player_to_move.cards.append(draw_card)
                 action_played = False
             else:
-                print(f"Playing for the {active_card}")
+                logger.info("Playing for the %s", active_card)
                 # If card type "wild" it must have assigned color. Therefore
                 # we can place any color on top
                 # If it reverse, then also must be played by color.
@@ -102,18 +106,21 @@ def main(number_of_players: int) -> None:
                 card_to_play = player_to_move.play_card(active_card)
 
                 if card_to_play is None:
-                    print("Drawing a card")
+                    logger.info("Drawing a card")
                     draw_card = draw_pile.pop(0)
                     player_to_move.cards.append(draw_card)
-                    print(f"Player {player_to_move.player_id} draw {draw_card} card")
+                    logger.info("Player %d draw %s card", player_to_move.player_id, draw_card)
                     card_to_play = player_to_move.play_card(active_card)
 
                 if card_to_play is None:
                     # Move to the next player
-                    print(f"Player {player_to_move.player_id} still has no cards to play, moving to the next player")
+                    logger.info(
+                        "Player %d still has no cards to play, moving to the next player",
+                        player_to_move.player_id,
+                    )
                 else:
                     discard_pile.append(card_to_play)
-                    print(f"Player {player_to_move.player_id} played {card_to_play}")
+                    logger.info("Player %d played %s", player_to_move.player_id, card_to_play)
 
                     # Here card to play is not None for sure
                     if card_to_play.card_type == "reverse":
@@ -127,7 +134,7 @@ def main(number_of_players: int) -> None:
             #       Either place one of the cards on hands to a discard pile
             #       Pick a card from the draw deck
             for player in players:
-                print(f"\t{player}")
+                logger.debug("\t%s", player)
 
             # Check the number of cards on players hands
             if len(player_to_move.cards) == 0:
@@ -149,7 +156,7 @@ def main(number_of_players: int) -> None:
             )
 
         # Count points here
-        print("counting points")
+        logger.info("counting points")
 
         # Let's exit after 1 round until we make the game body here
         dealer.has_winner = True

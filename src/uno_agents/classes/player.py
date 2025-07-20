@@ -1,9 +1,12 @@
 """Module to define player for Uno game."""
 
+import logging
 from abc import ABC, abstractmethod
 from random import choice, shuffle
 
 from uno_agents.classes.cards import Card, Colors, Deck, init_deck
+
+logger = logging.getLogger(__name__)
 
 
 class BasePlayer(ABC):
@@ -129,6 +132,9 @@ class Dealer:
         # Round counter
         self.current_round = 0
 
+        # Move counter
+        self.current_move = 0
+
     def init_round(self) -> Deck[Card]:
         """Method to init the round.
 
@@ -150,6 +156,7 @@ class Dealer:
         )
         self.current_player_index = self.round_start_index
         self.current_round += 1
+        self.current_move = 1
 
         # Shuffle the deck
         shuffle(self.deck)
@@ -161,9 +168,9 @@ class Dealer:
                 card = self.deck.pop(0)
 
                 # Give that card to the player
-                # hands[j].append(card)
                 self.players[j].cards.append(card)
 
+        # TODO Remove this later
         assert self.has_winner is False
 
         return self.deck
