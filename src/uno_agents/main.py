@@ -304,7 +304,17 @@ def main(number_of_players: int) -> None:
         # TODO continue game here with players. Here the round starts.
         # We are going to play the game while all the players have cards.
         round_ended = False
+
+        # This flag determines whether the action card has been played or not. To be
+        # more precise, whether current player must take cards, or skip move because
+        # previous player placed that action card to the discard pile. We need this in
+        # order to avoid players to stuck in infinite loop if an action card is played.
+        # For example, if we have 3 players (0, 1, 2) and player 0 plays "draw 2" card
+        # then player 1 must take 2 cards, but player 2 must not! Player 2 must play
+        # based on color or type now. Therefore, action is over for the card on the top
+        # of the discard pile.
         action_played = False
+
         while not round_ended:
             # Play the game
             # The first player to move is player under round_start_index
@@ -364,9 +374,6 @@ def main(number_of_players: int) -> None:
                     elif card_to_play.card_type in {"skip", "draw_two", "wild_draw_four"}:
                         action_played = True
 
-            # Flag to indicate whether player has moved
-            # has_moved = False
-
             # What player must do:
             #   Player must do one of the following:
             #       Either place one of the cards on hands to a discard pile
@@ -375,11 +382,6 @@ def main(number_of_players: int) -> None:
                 print(f"\t{player}")
 
             # Check the number of cards on players hands
-            # If number of cards drop to 0 then stop this loop
-            # for player in players:
-            #     if len(player.cards) == 0:
-            #         round_ended = True
-            #         break
             if len(player_to_move.cards) == 0:
                 round_ended = True  # TODO probably redundant, remove later if yes
                 break
