@@ -14,6 +14,27 @@ class Colors(Enum):
     A = "any"
 
 
+@unique
+class CartTypes(Enum):
+    """Type of cards in Uno game."""
+
+    SKIP = "skip"
+    DRAW2 = "draw_two"
+    REV = "reverse"
+    WILD = "wild"
+    WILD4 = "wild_draw_four"
+    N0 = "0"
+    N1 = "1"
+    N2 = "2"
+    N3 = "3"
+    N4 = "4"
+    N5 = "5"
+    N6 = "6"
+    N7 = "7"
+    N8 = "8"
+    N9 = "9"
+
+
 class Card:
     """Card object to keep track of cards and their values."""
 
@@ -68,8 +89,8 @@ def init_deck() -> list[Card]:
         else:
             deck.append(Card(color=color, card_type="0"))
             for i in range(1, 10):
-                deck.append(Card(color=color, card_type=i))
-                deck.append(Card(color=color, card_type=i))
+                deck.append(Card(color=color, card_type=str(i)))
+                deck.append(Card(color=color, card_type=str(i)))
 
             for _ in range(2):
                 deck.append(Card(color=color, card_type="skip"))
