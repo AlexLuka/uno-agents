@@ -184,6 +184,11 @@ class Dealer:
 
         return self.deck
 
+    def shuffle_deck(self, draw_pile: list, discard_pile: list, player_cards: list):
+        """
+        """
+        self.deck = draw_pile + discard_pile + player_cards
+
     def __str__(self) -> str:
         """Returns a game state as a string."""
         return f"""Game state: round {self.current_round}

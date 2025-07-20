@@ -1,5 +1,7 @@
 """Module with main entrypoint for the agents."""
 
+import itertools
+from random import shuffle
 
 from uno_agents.classes.player import Dealer, GeneralPlayer
 from uno_agents.utils.logger import init_logger
@@ -87,13 +89,29 @@ def main(number_of_players: int) -> None:
             elif active_card.card_type == "draw_two" and action_played:
                 logger.info("Drawing two cards")
                 # But we must draw cards only if it is the game against current player.
+                # If there are not enough cards, then pop(0) is going to throw an error.
+                # Therefore, we must make sure that there are cards in the draw pile.
                 for _ in range(2):
+                    if len(draw_pile) == 0:
+                        logger.info("Draw pile is empty. Shuffling the discard pile.")
+                        # Take discard pile, and move all the cards from discard pile to
+                        # the draw pile, except the top card.
+                        draw_pile, discard_pile = discard_pile[:-1], discard_pile[-1:]
+                        shuffle(draw_pile)
+
                     draw_card = draw_pile.pop(0)
                     player_to_move.cards.append(draw_card)
                 action_played = False
             elif active_card.card_type == "wild_draw_four" and action_played:
                 logger.info("Drawing four cards")
                 for _ in range(4):
+                    if len(draw_pile) == 0:
+                        logger.info("Draw pile is empty. Shuffling the discard pile.")
+                        # Take discard pile, and move all the cards from discard pile to
+                        # the draw pile, except the top card.
+                        draw_pile, discard_pile = discard_pile[:-1], discard_pile[-1:]
+                        shuffle(draw_pile)
+
                     draw_card = draw_pile.pop(0)
                     player_to_move.cards.append(draw_card)
                 action_played = False
@@ -107,6 +125,13 @@ def main(number_of_players: int) -> None:
 
                 if card_to_play is None:
                     logger.info("Drawing a card")
+                    if len(draw_pile) == 0:
+                        logger.info("Draw pile is empty. Shuffling the discard pile.")
+                        # Take discard pile, and move all the cards from discard pile to
+                        # the draw pile, except the top card.
+                        draw_pile, discard_pile = discard_pile[:-1], discard_pile[-1:]
+                        shuffle(draw_pile)
+
                     draw_card = draw_pile.pop(0)
                     player_to_move.cards.append(draw_card)
                     logger.info("Player %d draw %s card", player_to_move.player_id, draw_card)
@@ -181,12 +206,17 @@ def main(number_of_players: int) -> None:
         dealer.has_winner = True
 
         # If no winner, put all the cards back into the deck
-        dealer.deck = draw_pile + discard_pile
-        for player in players:
-            dealer.deck += player.cards
-            player.cards = []
+        dealer.shuffle_deck(
+            draw_pile=draw_pile,
+            discard_pile=discard_pile,
+            player_cards=list(itertools.chain(*[player.cards for player in players])),
+        )
+        # dealer.deck = draw_pile + discard_pile
+        # for player in players:
+        #     dealer.deck += player.cards
+        #     player.cards = []
         logger.info("Dealer deck has %d cards", len(dealer.deck))
 
 
 if __name__ == "__main__":
-    main(number_of_players=3)
+    main(number_of_players=5)
