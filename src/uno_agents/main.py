@@ -1,13 +1,19 @@
 """Module with main entrypoint for the agents."""
 
-from abc import ABC
+from abc import ABC, abstractmethod
 from enum import Enum, unique
 from random import choice, shuffle
 
 
 class BasePlayer(ABC):
-    def play_card(self):
-        pass
+    """Base abstract class for the Player.
+
+    It must show what methods must be implemented for custom player class.
+    """
+
+    @abstractmethod
+    def play_card(self) -> "Card":
+        """Method to select a card from available cards in a hand."""
 
 
 class GeneralPlayer(BasePlayer):
@@ -16,14 +22,15 @@ class GeneralPlayer(BasePlayer):
     player_id: int
     cards: list["Card"]
 
-    def __init__(self, player_id: int):
+    def __init__(self, player_id: int) -> None:
+        """Docstring."""
         self.player_id = player_id
         self.cards = []
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Player {self.player_id}: {', '.join(str(card) for card in self.cards)}"
 
-    def play_card(self, current_card: "Card"):
+    def play_card(self, current_card: "Card") -> "Card":
         """Method to select a card to play.
 
         Returns:
@@ -169,11 +176,8 @@ class Dealer:
         self.number_of_players = len(players)
 
         # Determine the order of turns in each game
-        # self.turn_order = list(range(self.number_of_players))
         shuffle(players)
         self.turn_order = [player.player_id for player in players]          # TODO do I need this???
-        # print(f"turn_order = {self.turn_order}")
-        # shuffle(self.turn_order)
         print(f"turn_order = {self.turn_order}")
 
         self.turn_direction = 1 # OR -1
