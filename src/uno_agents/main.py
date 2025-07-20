@@ -9,6 +9,11 @@ from uno_agents.utils.logger import init_logger
 logger = init_logger("")
 
 
+# TODO
+#   1. Create a game object anc call it in main
+#   2. Move initialization of discard_pile to init_round() method in the Dealer
+#   3. Replace string card types with an object ones
+
 def main(number_of_players: int) -> None:
     """Main entrypoint for the game.
 
