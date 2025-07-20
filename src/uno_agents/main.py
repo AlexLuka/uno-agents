@@ -155,7 +155,5 @@ def main(number_of_players: int) -> None:
         dealer.has_winner = True
 
 
-
-
 if __name__ == "__main__":
     main(number_of_players=3)
