@@ -6,7 +6,7 @@
 ################################################################
 # User-defined rules
 coverage.json
-.vscode/settings.json
+.vscode/*
 
 ################################################################
 # Byte-compiled / optimized / DLL files
