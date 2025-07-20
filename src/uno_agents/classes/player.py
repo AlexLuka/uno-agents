@@ -16,6 +16,16 @@ class BasePlayer(ABC):
     It must show what methods must be implemented for custom player class.
     """
 
+    player_id: int
+    cards: list[Card]
+    points: int
+
+    def __init__(self, player_id: int) -> None:
+        """Player initialization method."""
+        self.player_id = player_id
+        self.cards = []
+        self.points = 0
+
     @abstractmethod
     def play_card(self) -> Card:
         """Method to select a card from available cards in a hand."""
@@ -24,13 +34,9 @@ class BasePlayer(ABC):
 class GeneralPlayer(BasePlayer):
     """Docstring."""
 
-    player_id: int
-    cards: list["Card"]
-
     def __init__(self, player_id: int) -> None:
         """Docstring."""
-        self.player_id = player_id
-        self.cards = []
+        super().__init__(player_id=player_id)
 
     def __str__(self) -> str:
         return f"Player {self.player_id}: {', '.join(str(card) for card in self.cards)}"

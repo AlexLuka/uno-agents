@@ -164,10 +164,28 @@ def main(number_of_players: int) -> None:
             )
 
         # Count points here
-        logger.info("counting points")
+        logger.info("Counting points")
+
+        points = 0
+        for player in players:
+            # Technically, we can remove that condition, since the player
+            # without cards is going to contribute 0 to the total points.
+            # Going to keep it for clarity.
+            if len(player.cards) > 0:
+                points += sum([card.value for card in player.cards])
+        round_winner = players[dealer.current_player_index]
+        logger.info("Player %d gets %d points", round_winner.player_id, points)
+        round_winner.points += points
 
         # Let's exit after 1 round until we make the game body here
         dealer.has_winner = True
+
+        # If no winner, put all the cards back into the deck
+        dealer.deck = draw_pile + discard_pile
+        for player in players:
+            dealer.deck += player.cards
+            player.cards = []
+        logger.info("Dealer deck has %d cards", len(dealer.deck))
 
 
 if __name__ == "__main__":
