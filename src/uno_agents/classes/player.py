@@ -2,7 +2,8 @@
 
 import logging
 from abc import ABC, abstractmethod
-from random import choice, shuffle
+from random import shuffle
+from secrets import choice
 
 from uno_agents.classes.cards import Card, Colors, Deck, init_deck
 
@@ -51,11 +52,13 @@ class GeneralPlayer(BasePlayer):
         }
 
         for i, card in enumerate(self.cards):
-            if (card.color is Colors.A) or (card.color is current_card.color) or (card.card_type == current_card.card_type):
+            if ((card.color is Colors.A) or
+                (card.color is current_card.color) or
+                (card.card_type == current_card.card_type)):
                 playable_cards.append((card, i))
 
             colors_need[card.color] += 1
-        print(f"Player {self.player_id} has following playable cards: {playable_cards}")
+        logger.debug("Player %d has following playable cards: %s", self.player_id, playable_cards)
 
         if len(playable_cards) == 0:
             # This means that we do not have a playable cards

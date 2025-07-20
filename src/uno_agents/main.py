@@ -155,6 +155,14 @@ def main(number_of_players: int) -> None:
                 (dealer.current_player_index + dealer.turn_direction) % dealer.number_of_players
             )
 
+            # Check number of cards in the draw pile
+            logger.debug("Cards in draw pile: %d", len(draw_pile))
+            logger.debug("Cards in discard pile: %d", len(discard_pile))
+            logger.debug(
+                "Cards in the game: %d",
+                len(draw_pile) + len(discard_pile) + sum([len(player.cards) for player in players]),
+            )
+
         # Count points here
         logger.info("counting points")
 
