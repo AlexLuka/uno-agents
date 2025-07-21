@@ -3,6 +3,7 @@
 import itertools
 from random import shuffle
 
+from uno_agents.classes.cards import CartTypes
 from uno_agents.classes.player import Dealer, GeneralPlayer
 from uno_agents.utils.logger import init_logger
 
@@ -88,10 +89,10 @@ def main(number_of_players: int) -> None:
 
             # make a move depending on the card at the top of discard pile
             # if active_card.is_action:
-            if active_card.card_type == "skip" and action_played:
+            if active_card.card_type is CartTypes.SKIP and action_played:
                 logger.info("Skipping the move")
                 action_played = False
-            elif active_card.card_type == "draw_two" and action_played:
+            elif active_card.card_type is CartTypes.DRAW2 and action_played:
                 logger.info("Drawing two cards")
                 # But we must draw cards only if it is the game against current player.
                 # If there are not enough cards, then pop(0) is going to throw an error.
@@ -107,7 +108,7 @@ def main(number_of_players: int) -> None:
                     draw_card = draw_pile.pop(0)
                     player_to_move.cards.append(draw_card)
                 action_played = False
-            elif active_card.card_type == "wild_draw_four" and action_played:
+            elif active_card.card_type is CartTypes.WILD4 and action_played:
                 logger.info("Drawing four cards")
                 for _ in range(4):
                     if len(draw_pile) == 0:
@@ -153,10 +154,10 @@ def main(number_of_players: int) -> None:
                     logger.info("Player %d played %s", player_to_move.player_id, card_to_play)
 
                     # Here card to play is not None for sure
-                    if card_to_play.card_type == "reverse":
+                    if card_to_play.card_type is CartTypes.REV:
                         dealer.turn_direction *= -1
 
-                    elif card_to_play.card_type in {"skip", "draw_two", "wild_draw_four"}:
+                    elif card_to_play.card_type in {CartTypes.SKIP, CartTypes.DRAW2, CartTypes.WILD4}:
                         action_played = True
 
             # What player must do:

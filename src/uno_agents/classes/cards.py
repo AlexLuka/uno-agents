@@ -40,10 +40,10 @@ class Card:
 
     color: Colors   # also called suit
     value: int
-    card_type: str   #number, skip, draw two, reverse, wild, wild 4.
+    card_type: CartTypes   # number, skip, draw two, reverse, wild, wild 4.
     is_action: bool
 
-    def __init__(self, color: Colors, card_type: str) -> None:
+    def __init__(self, color: Colors, card_type: CartTypes) -> None:
         """Initialize the Card object with its value."""
         self.color = color
         self.card_type = card_type
@@ -53,20 +53,20 @@ class Card:
             self.value = 50
             self.is_action = True
         else:  # noqa: PLR5501
-            if self.card_type in {"skip", "draw_two", "reverse"}:
+            if self.card_type in {CartTypes.SKIP, CartTypes.DRAW2, CartTypes.REV}:
                 self.value = 20
                 self.is_action = True
             else:
-                self.value = int(self.card_type)
+                self.value = int(self.card_type.value)
                 self.is_action = False
 
     def __str__(self) -> str:
         """Method to get human-readable representation of a card."""
-        return f"{self.card_type} {self.color.value}"
+        return f"{self.card_type.value} {self.color.value}"
 
     def __repr__(self) -> str:
         """Method to get unambiguous representation."""
-        return f"Card(type={self.card_type},color={self.color.value},value={self.value})"
+        return f"Card(type={self.card_type.value},color={self.color.value},value={self.value})"
 
 
 class Deck(list):
@@ -84,16 +84,16 @@ def init_deck() -> list[Card]:
     for color in Colors:
         if color is Colors.A:
             for _ in range(4):
-                deck.append(Card(color=color, card_type="wild"))
-                deck.append(Card(color=color, card_type="wild_draw_four"))
+                deck.append(Card(color=color, card_type=CartTypes.WILD))
+                deck.append(Card(color=color, card_type=CartTypes.WILD4))
         else:
-            deck.append(Card(color=color, card_type="0"))
+            deck.append(Card(color=color, card_type=CartTypes.N0))
             for i in range(1, 10):
-                deck.append(Card(color=color, card_type=str(i)))
-                deck.append(Card(color=color, card_type=str(i)))
+                deck.append(Card(color=color, card_type=CartTypes(str(i))))
+                deck.append(Card(color=color, card_type=CartTypes(str(i))))
 
             for _ in range(2):
-                deck.append(Card(color=color, card_type="skip"))
-                deck.append(Card(color=color, card_type="reverse"))
-                deck.append(Card(color=color, card_type="draw_two"))
+                deck.append(Card(color=color, card_type=CartTypes.SKIP))
+                deck.append(Card(color=color, card_type=CartTypes.REV))
+                deck.append(Card(color=color, card_type=CartTypes.DRAW2))
     return deck
