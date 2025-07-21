@@ -40,25 +40,24 @@ class Card:
 
     color: Colors   # also called suit
     value: int
-    card_type: CartTypes   # number, skip, draw two, reverse, wild, wild 4.
-    is_action: bool
+    card_type: CartTypes    # number, skip, draw two, reverse, wild, wild 4.
+    is_action: bool         # Check if this attribute is use anywhere later
 
     def __init__(self, color: Colors, card_type: CartTypes) -> None:
         """Initialize the Card object with its value."""
         self.color = color
         self.card_type = card_type
 
-        # TODO Rethink this part
-        if self.color is Colors.A:
+        # Assign value and is_action flag
+        if self.card_type in {CartTypes.WILD, CartTypes.WILD4}:
             self.value = 50
             self.is_action = True
-        else:  # noqa: PLR5501
-            if self.card_type in {CartTypes.SKIP, CartTypes.DRAW2, CartTypes.REV}:
-                self.value = 20
-                self.is_action = True
-            else:
-                self.value = int(self.card_type.value)
-                self.is_action = False
+        elif self.card_type in {CartTypes.SKIP, CartTypes.DRAW2, CartTypes.REV}:
+            self.value = 20
+            self.is_action = True
+        else:
+            self.value = int(self.card_type.value)
+            self.is_action = False
 
     def __str__(self) -> str:
         """Method to get human-readable representation of a card."""
