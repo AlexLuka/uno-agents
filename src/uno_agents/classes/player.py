@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from random import shuffle
 from secrets import choice
 
-from uno_agents.classes.cards import Card, CartTypes, Colors, Deck, init_deck
+from uno_agents.classes.cards import Card, CardType, Colors, Deck, init_deck
 
 logger = logging.getLogger(__name__)
 
@@ -82,7 +82,7 @@ class GeneralPlayer(BasePlayer):
         # Selected card index is going to be defined anyway
         card  = self.cards.pop(selected_card_index)
 
-        if card.card_type in {CartTypes.WILD, CartTypes.WILD4}:
+        if card.card_type in {CardType.WILD, CardType.WILD4}:
             # Select a color to call
             # TODO
             color_need, _ = max(colors_need.items(), key=lambda x: x[1])

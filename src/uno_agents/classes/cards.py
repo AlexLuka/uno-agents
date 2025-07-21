@@ -15,7 +15,7 @@ class Colors(Enum):
 
 
 @unique
-class CartTypes(Enum):
+class CardType(Enum):
     """Type of cards in Uno game."""
 
     SKIP = "skip"
@@ -40,19 +40,19 @@ class Card:
 
     color: Colors   # also called suit
     value: int
-    card_type: CartTypes    # number, skip, draw two, reverse, wild, wild 4.
+    card_type: CardType    # number, skip, draw two, reverse, wild, wild 4.
     is_action: bool         # Check if this attribute is use anywhere later
 
-    def __init__(self, color: Colors, card_type: CartTypes) -> None:
+    def __init__(self, color: Colors, card_type: CardType) -> None:
         """Initialize the Card object with its value."""
         self.color = color
         self.card_type = card_type
 
         # Assign value and is_action flag
-        if self.card_type in {CartTypes.WILD, CartTypes.WILD4}:
+        if self.card_type in {CardType.WILD, CardType.WILD4}:
             self.value = 50
             self.is_action = True
-        elif self.card_type in {CartTypes.SKIP, CartTypes.DRAW2, CartTypes.REV}:
+        elif self.card_type in {CardType.SKIP, CardType.DRAW2, CardType.REV}:
             self.value = 20
             self.is_action = True
         else:
@@ -83,16 +83,16 @@ def init_deck() -> list[Card]:
     for color in Colors:
         if color is Colors.A:
             for _ in range(4):
-                deck.append(Card(color=color, card_type=CartTypes.WILD))
-                deck.append(Card(color=color, card_type=CartTypes.WILD4))
+                deck.append(Card(color=color, card_type=CardType.WILD))
+                deck.append(Card(color=color, card_type=CardType.WILD4))
         else:
-            deck.append(Card(color=color, card_type=CartTypes.N0))
+            deck.append(Card(color=color, card_type=CardType.N0))
             for i in range(1, 10):
-                deck.append(Card(color=color, card_type=CartTypes(str(i))))
-                deck.append(Card(color=color, card_type=CartTypes(str(i))))
+                deck.append(Card(color=color, card_type=CardType(str(i))))
+                deck.append(Card(color=color, card_type=CardType(str(i))))
 
             for _ in range(2):
-                deck.append(Card(color=color, card_type=CartTypes.SKIP))
-                deck.append(Card(color=color, card_type=CartTypes.REV))
-                deck.append(Card(color=color, card_type=CartTypes.DRAW2))
+                deck.append(Card(color=color, card_type=CardType.SKIP))
+                deck.append(Card(color=color, card_type=CardType.REV))
+                deck.append(Card(color=color, card_type=CardType.DRAW2))
     return deck
