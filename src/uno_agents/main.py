@@ -15,6 +15,9 @@ logger = init_logger("")
 #   2. Move initialization of discard_pile to init_round() method in the Dealer
 #      In fact, let's make a dealer a keeper of discard pile and draw pile. And
 #      shuffle the cards when necessary using methods defined within Dealer class.
+#   3. The part that shuffles discard pile and creates new draw pile when draw pile
+#       is empty, repeats 3 times in the code. Move that part to a method within
+#       the dealer and remove repeating code.
 
 def main(number_of_players: int) -> None:
     """Main entrypoint for the game.
