@@ -27,8 +27,18 @@ class BasePlayer(ABC):
         self.points = 0
 
     @abstractmethod
-    def play_card(self) -> Card:
-        """Method to select a card from available cards in a hand."""
+    def play_card(self, current_card: Card, *args: list, **kwargs: dict) -> Card:
+        """Method to select a card from available cards in a hand.
+
+        Args:
+            current_card: current card at the top of a discard pile.
+            *args: additional arguments. The arguments can be the current state
+                of a game, how many cards in discard and draw pile, which cards
+                have been played already, etc. This information can be useful for
+                agent players, but may be not used by the general player.
+            **kwargs: also arguments passed by names to the method. These could be
+                similar to those passed with *args.
+        """
 
 
 class GeneralPlayer(BasePlayer):
@@ -39,9 +49,10 @@ class GeneralPlayer(BasePlayer):
         super().__init__(player_id=player_id)
 
     def __str__(self) -> str:
+        """Human-readable representation of GeneralPlayer object."""
         return f"Player {self.player_id}: {', '.join(str(card) for card in self.cards)}"
 
-    def play_card(self, current_card: "Card") -> "Card":
+    def play_card(self, current_card: Card) -> Card:
         """Method to select a card to play.
 
         Returns:
@@ -179,10 +190,6 @@ class Dealer:
 
                 # Give that card to the player
                 self.players[j].cards.append(card)
-
-        # TODO Remove this later
-        assert self.has_winner is False
-
         return self.deck
 
     def shuffle_deck(self, draw_pile: list, discard_pile: list, player_cards: list) -> None:
@@ -198,12 +205,16 @@ class Dealer:
 
     def __str__(self) -> str:
         """Returns a game state as a string."""
+        player = (
+            "Unknown" if self.round_start_index < 0 else
+            self.turn_order[self.round_start_index]
+        )
         return f"""Game state: round {self.current_round}
         Number of cards: {len(self.deck)}
         Number of players: {self.number_of_players}
         Round start index: {self.round_start_index}
         Players order: {self.turn_order}
-        Player to start the round: {"Unknown" if self.round_start_index < 0 else self.turn_order[self.round_start_index]}
+        Player to start the round: {player}
         Game direction: {self.turn_direction}
         {", ".join(str(card) for card in self.deck)}
         """
