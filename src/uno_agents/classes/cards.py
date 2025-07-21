@@ -4,7 +4,7 @@ from enum import Enum, unique
 
 
 @unique
-class Color(Enum):
+class CardColor(Enum):
     """Class to keep colors."""
 
     R = "red"
@@ -38,12 +38,12 @@ class CardType(Enum):
 class Card:
     """Card object to keep track of cards and their values."""
 
-    color: Color   # also called suit
+    color: CardColor   # also called suit
     value: int
     card_type: CardType    # number, skip, draw two, reverse, wild, wild 4.
     is_action: bool         # Check if this attribute is use anywhere later
 
-    def __init__(self, color: Color, card_type: CardType) -> None:
+    def __init__(self, color: CardColor, card_type: CardType) -> None:
         """Initialize the Card object with its value."""
         self.color = color
         self.card_type = card_type
@@ -80,8 +80,8 @@ def init_deck() -> list[Card]:
     """Function to init the deck."""
     deck = Deck()
 
-    for color in Color:
-        if color is Color.A:
+    for color in CardColor:
+        if color is CardColor.A:
             for _ in range(4):
                 deck.append(Card(color=color, card_type=CardType.WILD))
                 deck.append(Card(color=color, card_type=CardType.WILD4))
