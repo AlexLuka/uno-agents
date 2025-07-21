@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from random import shuffle
 from secrets import choice
 
-from uno_agents.classes.cards import Card, CardType, Colors, Deck, init_deck
+from uno_agents.classes.cards import Card, CardType, Color, Deck, init_deck
 
 logger = logging.getLogger(__name__)
 
@@ -50,15 +50,15 @@ class GeneralPlayer(BasePlayer):
         # List all the cards that are currently playable
         playable_cards = []
         colors_need = {
-            Colors.R: 0,
-            Colors.G: 0,
-            Colors.Y: 0,
-            Colors.B: 0,
-            Colors.A: 0,
+            Color.R: 0,
+            Color.G: 0,
+            Color.Y: 0,
+            Color.B: 0,
+            Color.A: 0,
         }
 
         for i, card in enumerate(self.cards):
-            if ((card.color is Colors.A) or
+            if ((card.color is Color.A) or
                 (card.color is current_card.color) or
                 (card.card_type is current_card.card_type)):
                 playable_cards.append((card, i))
@@ -86,8 +86,8 @@ class GeneralPlayer(BasePlayer):
             # Select a color to call
             # TODO
             color_need, _ = max(colors_need.items(), key=lambda x: x[1])
-            if color_need is Colors.A:
-                color_need = choice([Colors.B, Colors.Y, Colors.G, Colors.R])
+            if color_need is Color.A:
+                color_need = choice([Color.B, Color.Y, Color.G, Color.R])
 
             # Here we assigned a color to the wild card. It must be reset when shuffle!
             card.color = color_need
