@@ -100,6 +100,7 @@ class GeneralPlayer(BasePlayer):
 class Dealer:
     """Dealer is going to a keeper of the game info."""
 
+    deck: list[Card]
     round: int
     draw_pile: list
     discard_pile: list
@@ -184,10 +185,16 @@ class Dealer:
 
         return self.deck
 
-    def shuffle_deck(self, draw_pile: list, discard_pile: list, player_cards: list):
-        """
+    def shuffle_deck(self, draw_pile: list, discard_pile: list, player_cards: list) -> None:
+        """Method to reshuffle a deck.
+
+        The reason why it maybe required is to clear the colors of wild cards.
         """
         self.deck = draw_pile + discard_pile + player_cards
+
+        for card in self.deck:
+            if card.card_type in {CardType.WILD, CardType.WILD4}:
+                card.color = CardColor.A
 
     def __str__(self) -> str:
         """Returns a game state as a string."""

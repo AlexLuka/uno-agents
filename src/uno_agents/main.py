@@ -3,7 +3,7 @@
 import itertools
 from random import shuffle
 
-from uno_agents.classes.cards import CardType
+from uno_agents.classes.cards import CardColor, CardType
 from uno_agents.classes.player import Dealer, GeneralPlayer
 from uno_agents.utils.logger import init_logger
 
@@ -11,9 +11,10 @@ logger = init_logger("")
 
 
 # TODO
-#   1. Create a game object anc call it in main
+#   1. Create a game object and call it in main
 #   2. Move initialization of discard_pile to init_round() method in the Dealer
-#   3. Replace string card types with an object ones
+#      In fact, let's make a dealer a keeper of discard pile and draw pile. And
+#      shuffle the cards when necessary using methods defined within Dealer class.
 
 def main(number_of_players: int) -> None:
     """Main entrypoint for the game.
@@ -104,6 +105,9 @@ def main(number_of_players: int) -> None:
                         # the draw pile, except the top card.
                         draw_pile, discard_pile = discard_pile[:-1], discard_pile[-1:]
                         shuffle(draw_pile)
+                        for card in draw_pile:
+                            if card.card_type in {CardType.WILD, CardType.WILD4}:
+                                card.color = CardColor.A
 
                     draw_card = draw_pile.pop(0)
                     player_to_move.cards.append(draw_card)
@@ -117,6 +121,9 @@ def main(number_of_players: int) -> None:
                         # the draw pile, except the top card.
                         draw_pile, discard_pile = discard_pile[:-1], discard_pile[-1:]
                         shuffle(draw_pile)
+                        for card in draw_pile:
+                            if card.card_type in {CardType.WILD, CardType.WILD4}:
+                                card.color = CardColor.A
 
                     draw_card = draw_pile.pop(0)
                     player_to_move.cards.append(draw_card)
@@ -137,6 +144,9 @@ def main(number_of_players: int) -> None:
                         # the draw pile, except the top card.
                         draw_pile, discard_pile = discard_pile[:-1], discard_pile[-1:]
                         shuffle(draw_pile)
+                        for card in draw_pile:
+                            if card.card_type in {CardType.WILD, CardType.WILD4}:
+                                card.color = CardColor.A
 
                     draw_card = draw_pile.pop(0)
                     player_to_move.cards.append(draw_card)
