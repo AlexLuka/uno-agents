@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from random import shuffle
 from secrets import choice
 
-from uno_agents.classes.cards import Card, CardColor, CardType, Deck, init_deck
+from uno_agents.classes.cards import Card, CardColor, CardType, Deck, Hand, init_deck
 
 logger = logging.getLogger(__name__)
 
@@ -17,14 +17,29 @@ class BasePlayer(ABC):
     """
 
     player_id: int
-    cards: list[Card]
-    points: int
+    cards: Hand[Card]
+
+    # Total number of points a player has during a game.
+    _points: int
 
     def __init__(self, player_id: int) -> None:
         """Player initialization method."""
         self.player_id = player_id
-        self.cards = []
+        self.cards = Hand()
         self.points = 0
+
+    def hand_points(self) -> int:
+        """Property to return number of points in a Player's hand."""
+        return self.cards.points
+
+    @property
+    def points(self) -> int:
+        """Property to access number of Player's points."""
+        return self._points
+
+    @points.setter
+    def points(self, value: int) -> None:
+        self._points = value
 
     @abstractmethod
     def play_card(self, current_card: Card, *args: list, **kwargs: dict) -> Card:

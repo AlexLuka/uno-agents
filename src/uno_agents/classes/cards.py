@@ -1,6 +1,10 @@
 """Module with classes for cards."""
 
+import logging
 from enum import Enum, unique
+from collections import UserList
+
+logger = logging.getLogger(__name__)
 
 
 @unique
@@ -70,6 +74,55 @@ class Card:
 
 class Deck(list):
     """Class to store deck of cards as a list."""
+
+    def __str__(self) -> str:
+        """Method to get human-readable representation of a deck."""
+        return f"[{', '.join(map(str, self))}]"
+
+
+class Hand(UserList):
+    """Class to store deck of cards as a list."""
+
+    _points: int
+
+    def __init__(self) -> None:
+        """Initialize a hand."""
+        super().__init__()
+
+        # Set points to 0 on init
+        self.points = 0
+
+    @property
+    def points(self) -> int:
+        return self._points
+
+    @points.setter
+    def points(self, value: int) -> None:
+        self._points = value
+
+    def append(self, card: Card) -> None:
+        """Method to add a card to a hand."""
+        # Increase number of points
+        super().append(card)
+        self.points += card.value
+
+    def pop(self, index: int = -1) -> Card:
+        """Overrides the default pop method to add custom behavior.
+
+        For example, it prints a message before popping an element.
+        """
+        if not self:
+            msg = "pop from empty list"
+            raise IndexError(msg)
+
+        # Add your custom logic here before or after the original pop operation
+        logger.debug("Popping element at index %d from a Hand.", index)
+
+        # Call the original list's pop method using super()
+        card = super().pop(index)
+
+        self.points -= card.value
+        return card
 
     def __str__(self) -> str:
         """Method to get human-readable representation of a deck."""

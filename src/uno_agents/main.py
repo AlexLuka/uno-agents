@@ -177,8 +177,9 @@ def main(number_of_players: int) -> None:
             # Technically, we can remove that condition, since the player
             # without cards is going to contribute 0 to the total points.
             # Going to keep it for clarity.
-            if len(player.cards) > 0:
-                points += sum([card.value for card in player.cards])
+            logger.info("Player %d has %d points on hand", player.player_id, player.hand_points())
+            points += player.hand_points()
+
         round_winner = players[dealer.current_player_index]
         logger.info("Player %d gets %d points", round_winner.player_id, points)
         round_winner.points += points
