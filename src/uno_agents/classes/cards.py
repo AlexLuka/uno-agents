@@ -1,8 +1,8 @@
 """Module with classes for cards."""
 
 import logging
-from enum import Enum, unique
 from collections import UserList
+from enum import Enum, unique
 
 logger = logging.getLogger(__name__)
 
@@ -94,6 +94,7 @@ class Hand(UserList):
 
     @property
     def points(self) -> int:
+        """Property to return number of points in a hand."""
         return self._points
 
     @points.setter
