@@ -17,6 +17,7 @@ logger = init_logger("")
 #   5. Make a player that plays randomly
 #   6. Make the first LLM player.
 #   7. Create a documentation
+#   8. Move all the if statements about active_card.card_type to some method or function to make code simplier.
 
 def main(number_of_players: int) -> None:
     """Main entrypoint for the game.
