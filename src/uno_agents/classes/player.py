@@ -111,11 +111,10 @@ class GeneralPlayer(BasePlayer):
 class Dealer:
     """Dealer is going to a keeper of the game info."""
 
-    deck: list[Card]
-    round: int
-    draw_pile: list
+    draw_pile: list[Card]
     discard_pile: list
     player_turn: int
+    round: int
     turn_direction: int
 
     def __init__(self, players: list[GeneralPlayer]) -> None:
@@ -145,7 +144,7 @@ class Dealer:
         self.current_player_index = -1
 
         # This is the deck
-        self.deck = init_deck()
+        self.draw_pile = init_deck()
 
         # Flag that we have a winner
         self.has_winner = False
@@ -180,26 +179,37 @@ class Dealer:
         self.current_move = 1
 
         # Shuffle the deck
-        shuffle(self.deck)
+        shuffle(self.draw_pile)
 
         # Hands is a list of 7-tuples
         for _ in range(7):
             for j in range(self.number_of_players):
                 # Get the card from the top
-                card = self.deck.pop(0)
+                card = self.draw_pile.pop(0)
 
                 # Give that card to the player
                 self.players[j].cards.append(card)
-        return self.deck
+
+        # Also create a discard pile
+        self.discard_pile = []
+
+        # Pick card from the top of a draw pile until the first non-action card appears
+        while True:
+            card = self.draw_pile.pop(0)
+            self.discard_pile.append(card)
+
+            if not card.is_action:
+                break
+        # This method doesn't return anything because the dealer is a keeper of the piles
 
     def shuffle_deck(self, draw_pile: list, discard_pile: list, player_cards: list) -> None:
         """Method to reshuffle a deck.
 
         The reason why it maybe required is to clear the colors of wild cards.
         """
-        self.deck = draw_pile + discard_pile + player_cards
+        self.draw_pile = draw_pile + discard_pile + player_cards
 
-        for card in self.deck:
+        for card in self.draw_pile:
             if card.card_type in {CardType.WILD, CardType.WILD4}:
                 card.color = CardColor.A
 
@@ -210,11 +220,11 @@ class Dealer:
             self.turn_order[self.round_start_index]
         )
         return f"""Game state: round {self.current_round}
-        Number of cards: {len(self.deck)}
+        Number of cards: {len(self.draw_pile)}
         Number of players: {self.number_of_players}
         Round start index: {self.round_start_index}
         Players order: {self.turn_order}
         Player to start the round: {player}
         Game direction: {self.turn_direction}
-        {", ".join(str(card) for card in self.deck)}
+        {", ".join(str(card) for card in self.draw_pile)}
         """

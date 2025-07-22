@@ -40,25 +40,24 @@ def main(number_of_players: int) -> None:
 
     while not dealer.has_winner:
         # Initialize the round
-        draw_pile = dealer.init_round()
-        discard_pile = []
-
+        dealer.init_round()
         logger.debug("dealer=%s", dealer)
-        logger.debug("draw_pile=%s", draw_pile)
-        logger.info("")
+        logger.debug("draw_pile=%s", dealer.draw_pile)
+        logger.debug("discard_pile=%s", dealer.discard_pile)
+        logger.info("-" * 50)
 
         for player in players:
             logger.debug("player=%s", player)
 
-        #
-        # Pick card from the top of a draw pile until non-action card appears
-        while True:
-            card = draw_pile.pop(0)
-            discard_pile.append(card)
+        # #
+        # # Pick card from the top of a draw pile until non-action card appears
+        # while True:
+        #     card = draw_pile.pop(0)
+        #     discard_pile.append(card)
 
-            if not card.is_action:
-                break
-        logger.info("First discard card: %s", discard_pile[-1])
+        #     if not card.is_action:
+        #         break
+        logger.info("First discard card: %s", dealer.discard_pile[-1])
 
         # Now we have non-action card at the top of the discard_pile, players can
         # start the game
@@ -88,7 +87,7 @@ def main(number_of_players: int) -> None:
             player_to_move = players[dealer.current_player_index]
             logger.info("Player %d is moving", player_to_move.player_id)
 
-            active_card = discard_pile[-1]
+            active_card = dealer.discard_pile[-1]
             logger.info("Current active card: %s", active_card)
 
             # make a move depending on the card at the top of discard pile
@@ -102,33 +101,33 @@ def main(number_of_players: int) -> None:
                 # If there are not enough cards, then pop(0) is going to throw an error.
                 # Therefore, we must make sure that there are cards in the draw pile.
                 for _ in range(2):
-                    if len(draw_pile) == 0:
+                    if len(dealer.draw_pile) == 0:
                         logger.info("Draw pile is empty. Shuffling the discard pile.")
                         # Take discard pile, and move all the cards from discard pile to
                         # the draw pile, except the top card.
-                        draw_pile, discard_pile = discard_pile[:-1], discard_pile[-1:]
-                        shuffle(draw_pile)
-                        for card in draw_pile:
+                        dealer.draw_pile, dealer.discard_pile = dealer.discard_pile[:-1], dealer.discard_pile[-1:]
+                        shuffle(dealer.draw_pile)
+                        for card in dealer.draw_pile:
                             if card.card_type in {CardType.WILD, CardType.WILD4}:
                                 card.color = CardColor.A
 
-                    draw_card = draw_pile.pop(0)
+                    draw_card = dealer.draw_pile.pop(0)
                     player_to_move.cards.append(draw_card)
                 action_played = False
             elif active_card.card_type is CardType.WILD4 and action_played:
                 logger.info("Drawing four cards")
                 for _ in range(4):
-                    if len(draw_pile) == 0:
+                    if len(dealer.deck) == 0:
                         logger.info("Draw pile is empty. Shuffling the discard pile.")
                         # Take discard pile, and move all the cards from discard pile to
                         # the draw pile, except the top card.
-                        draw_pile, discard_pile = discard_pile[:-1], discard_pile[-1:]
-                        shuffle(draw_pile)
-                        for card in draw_pile:
+                        dealer.deck, dealer.discard_pile = dealer.discard_pile[:-1], dealer.discard_pile[-1:]
+                        shuffle(dealer.deck)
+                        for card in dealer.deck:
                             if card.card_type in {CardType.WILD, CardType.WILD4}:
                                 card.color = CardColor.A
 
-                    draw_card = draw_pile.pop(0)
+                    draw_card = dealer.deck.pop(0)
                     player_to_move.cards.append(draw_card)
                 action_played = False
             else:
@@ -141,17 +140,17 @@ def main(number_of_players: int) -> None:
 
                 if card_to_play is None:
                     logger.info("Drawing a card")
-                    if len(draw_pile) == 0:
+                    if len(dealer.draw_pile) == 0:
                         logger.info("Draw pile is empty. Shuffling the discard pile.")
                         # Take discard pile, and move all the cards from discard pile to
                         # the draw pile, except the top card.
-                        draw_pile, discard_pile = discard_pile[:-1], discard_pile[-1:]
-                        shuffle(draw_pile)
-                        for card in draw_pile:
+                        dealer.draw_pile, dealer.discard_pile = dealer.discard_pile[:-1], dealer.discard_pile[-1:]
+                        shuffle(dealer.draw_pile)
+                        for card in dealer.draw_pile:
                             if card.card_type in {CardType.WILD, CardType.WILD4}:
                                 card.color = CardColor.A
 
-                    draw_card = draw_pile.pop(0)
+                    draw_card = dealer.draw_pile.pop(0)
                     player_to_move.cards.append(draw_card)
                     logger.info("Player %d draw %s card", player_to_move.player_id, draw_card)
                     card_to_play = player_to_move.play_card(active_card)
@@ -163,7 +162,7 @@ def main(number_of_players: int) -> None:
                         player_to_move.player_id,
                     )
                 else:
-                    discard_pile.append(card_to_play)
+                    dealer.discard_pile.append(card_to_play)
                     logger.info("Player %d played %s", player_to_move.player_id, card_to_play)
 
                     # Here card to play is not None for sure
@@ -200,11 +199,11 @@ def main(number_of_players: int) -> None:
             )
 
             # Check number of cards in the draw pile
-            logger.debug("Cards in draw pile: %d", len(draw_pile))
-            logger.debug("Cards in discard pile: %d", len(discard_pile))
+            logger.debug("Cards in draw pile: %d", len(dealer.draw_pile))
+            logger.debug("Cards in discard pile: %d", len(dealer.discard_pile))
             logger.debug(
                 "Cards in the game: %d",
-                len(draw_pile) + len(discard_pile) + sum([len(player.cards) for player in players]),
+                len(dealer.draw_pile) + len(dealer.discard_pile) + sum([len(player.cards) for player in players]),
             )
 
         # Count points here
@@ -226,15 +225,15 @@ def main(number_of_players: int) -> None:
 
         # If no winner, put all the cards back into the deck
         dealer.shuffle_deck(
-            draw_pile=draw_pile,
-            discard_pile=discard_pile,
+            draw_pile=dealer.draw_pile,
+            discard_pile=dealer.discard_pile,
             player_cards=list(itertools.chain(*[player.cards for player in players])),
         )
         # dealer.deck = draw_pile + discard_pile
         # for player in players:
         #     dealer.deck += player.cards
         #     player.cards = []
-        logger.info("Dealer deck has %d cards", len(dealer.deck))
+        logger.info("Dealer deck has %d cards", len(dealer.draw_pile))
 
 
 if __name__ == "__main__":
