@@ -95,7 +95,6 @@ class GeneralPlayer(BasePlayer):
 
         if card.card_type in {CardType.WILD, CardType.WILD4}:
             # Select a color to call
-            # TODO
             color_need, _ = max(colors_need.items(), key=lambda x: x[1])
             if color_need is CardColor.A:
                 color_need = choice([CardColor.B, CardColor.Y, CardColor.G, CardColor.R])

@@ -1,9 +1,8 @@
 """Module with main entrypoint for the agents."""
 
 import itertools
-from random import shuffle
 
-from uno_agents.classes.cards import CardColor, CardType
+from uno_agents.classes.cards import CardType
 from uno_agents.classes.player import Dealer, GeneralPlayer
 from uno_agents.utils.logger import init_logger
 
@@ -12,8 +11,8 @@ logger = init_logger("")
 
 # TODO
 #   1. Create a game object and call it in main
-#   2.
-#   3.
+#   2. Create a method in Player class that returns current value of a hand
+#   3. Rething shuffle_deck() method in Dealer class - must collect all the cards and shuffle - create new draw pile
 
 def main(number_of_players: int) -> None:
     """Main entrypoint for the game.
@@ -177,15 +176,12 @@ def main(number_of_players: int) -> None:
         dealer.has_winner = True
 
         # If no winner, put all the cards back into the deck
+        # TODO no need to pass arguments move to method def in Dealer class
         dealer.shuffle_deck(
             draw_pile=dealer.draw_pile,
             discard_pile=dealer.discard_pile,
             player_cards=list(itertools.chain(*[player.cards for player in players])),
         )
-        # dealer.deck = draw_pile + discard_pile
-        # for player in players:
-        #     dealer.deck += player.cards
-        #     player.cards = []
         logger.info("Dealer deck has %d cards", len(dealer.draw_pile))
 
 
