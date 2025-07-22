@@ -13,6 +13,9 @@ logger = init_logger("")
 #   1. Create a game object and call it in main
 #   2. Create a method in Player class that returns current value of a hand
 #   3. Rething shuffle_deck() method in Dealer class - must collect all the cards and shuffle - create new draw pile
+#   4. Update readme
+#   5. Make a player that plays randomly
+#   6. Make the first LLM player.
 
 def main(number_of_players: int) -> None:
     """Main entrypoint for the game.
