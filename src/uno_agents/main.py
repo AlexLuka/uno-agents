@@ -109,6 +109,12 @@ def main(number_of_players: int) -> None:
                 if card_to_play is None:
                     logger.info("Drawing a card")
                     dealer.draw_card(player=player_to_move, number_of_cards=1)
+
+                    # Here we make a decision whether to play the card again because
+                    # in some situations a player may take good card and decide not
+                    # to play it immediately, but play later in the game. This scenario
+                    # is going to be possible if the play_card() method is non-deterministic,
+                    # but more LLM-driven.
                     card_to_play = player_to_move.play_card(active_card)
 
                 if card_to_play is None:
