@@ -10,7 +10,7 @@ logger = init_logger("")
 
 
 # TODO
-#   1. Create a game object and call it in main
+#   1. Create a game object and call it in main: probably dealer is the one!
 #   2.
 #   3. Rethink shuffle_deck() method in Dealer class - must collect all the cards and shuffle - create new draw pile
 #   4. Update readme
@@ -166,23 +166,23 @@ def main(number_of_players: int) -> None:
             logger.debug("Cards in discard pile: %d", len(dealer.discard_pile))
             logger.debug(
                 "Cards in the game: %d",
-                len(dealer.draw_pile) + len(dealer.discard_pile) + sum([len(player.cards) for player in players]),
+                (
+                    len(dealer.draw_pile) +
+                    len(dealer.discard_pile) +
+                    sum([len(player.cards) for player in players])
+                ),
             )
 
         # Count points here
         logger.info("Counting points")
 
-        points = 0
+        round_points = 0
         for player in players:
-            # Technically, we can remove that condition, since the player
-            # without cards is going to contribute 0 to the total points.
-            # Going to keep it for clarity.
-            logger.info("Player %d has %d points on hand", player.player_id, player.hand_points())
-            points += player.hand_points()
+            round_points += player.hand_points()
 
         round_winner = players[dealer.current_player_index]
-        logger.info("Player %d gets %d points", round_winner.player_id, points)
-        round_winner.points += points
+        logger.info("Player %d gets %d points", round_winner.player_id, round_points)
+        round_winner.points += round_points
 
         # Let's exit after 1 round until we make the game body here
         dealer.has_winner = True

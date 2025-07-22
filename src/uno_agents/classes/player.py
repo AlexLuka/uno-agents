@@ -30,6 +30,7 @@ class BasePlayer(ABC):
 
     def hand_points(self) -> int:
         """Property to return number of points in a Player's hand."""
+        logger.debug("Player %d has %d points on hand", self.player_id, self.cards.points)
         return self.cards.points
 
     @property
@@ -252,6 +253,66 @@ class Dealer:
 
             # Add card to a player's hand
             player.cards.append(card)
+
+    def play_move(self, player: BasePlayer, action_played: bool) -> bool:
+        """TODO Review this method!!!"""
+        active_card = self.top_card()
+        logger.info("Current active card: %s", active_card)
+
+        # make a move depending on the card at the top of discard pile
+        # if active_card.is_action:
+        if active_card.card_type is CardType.SKIP and action_played:
+            logger.info("Skipping the move")
+            return False
+
+        if active_card.card_type is CardType.DRAW2 and action_played:
+            logger.info("Drawing two cards")
+            # But we must draw cards only if it is the game against current player.
+            # If there are not enough cards, then pop(0) is going to throw an error.
+            # Therefore, we must make sure that there are cards in the draw pile.
+            self.draw_card(player=player, number_of_cards=2)
+            return False
+
+        if active_card.card_type is CardType.WILD4 and action_played:
+            logger.info("Drawing four cards")
+            self.draw_card(player=player, number_of_cards=4)
+            return False
+
+        logger.info("Playing for the %s", active_card)
+        # If card type "wild" it must have assigned color. Therefore
+        # we can place any color on top
+        # If it reverse, then also must be played by color.
+        # If it is number card, must play card
+        card_to_play = player.play_card(active_card)
+
+        if card_to_play is None:
+            logger.info("Drawing a card")
+            self.draw_card(player=player, number_of_cards=1)
+
+            # Here we make a decision whether to play the card again because
+            # in some situations a player may take good card and decide not
+            # to play it immediately, but play later in the game. This scenario
+            # is going to be possible if the play_card() method is non-deterministic,
+            # but more LLM-driven.
+            card_to_play = player.play_card(active_card)
+
+        if card_to_play is None:
+            # Move to the next player
+            logger.info(
+                "Player %d still has no cards to play, moving to the next player",
+                player.player_id,
+            )
+        else:
+            self.discard_pile.append(card_to_play)
+            logger.info("Player %d played %s", player.player_id, card_to_play)
+
+            # Here card to play is not None for sure
+            if card_to_play.card_type is CardType.REV:
+                self.turn_direction *= -1
+
+            elif card_to_play.card_type in {CardType.SKIP, CardType.DRAW2, CardType.WILD4}:
+                return True
+        return False
 
     def shuffle_deck(self, draw_pile: list, discard_pile: list, player_cards: list) -> None:
         """Method to reshuffle a deck.
