@@ -206,29 +206,38 @@ class Dealer:
         """Method that returns top card on top of discard pile."""
         return self.discard_pile[-1]
 
-    def draw_card(self) -> Card:
-        """Method to draw a card from a draw pile."""
-        if len(self.draw_pile) == 0:
-            logger.info("Draw pile is empty. Shuffling the discard pile.")
+    def draw_card(self, player: BasePlayer, number_of_cards: int) -> None:
+        """Method to draw 1, 2, or 4 cards from a draw pile and add them to player's hand.
 
-            # Take discard pile, and move all the cards from discard pile to
-            # the draw pile, except the top card. It must remain in the discard
-            # pile.
-            self.draw_pile, self.discard_pile = self.discard_pile[:-1], self.discard_pile[-1:]
+        Args:
+            player: object that represents a player
+            number_of_cards: number of cards to add
+        """
+        for _ in range(number_of_cards):
+            if len(self.draw_pile) == 0:
+                logger.info("Draw pile is empty. Shuffling the discard pile.")
 
-            # Shuffle the cards in the draw pile
-            shuffle(self.draw_pile)
+                # Take discard pile, and move all the cards from discard pile to
+                # the draw pile, except the top card. It must remain in the discard
+                # pile.
+                self.draw_pile, self.discard_pile = self.discard_pile[:-1], self.discard_pile[-1:]
 
-            # Since we have played the wild cards and assigned colors to them, the colors
-            # need to be reset to A (Any). So, the next time a player takes a card, the card
-            # must have no color, and player will assign it on play.
-            for card in self.draw_pile:
-                if card.card_type in {CardType.WILD, CardType.WILD4}:
-                    card.color = CardColor.A
+                # Shuffle the cards in the draw pile
+                shuffle(self.draw_pile)
 
-        # Get one card from the top. That method will never fail because we check if draw_pile
-        # is empty or not right before.
-        return self.draw_pile.pop(0)
+                # Since we have played the wild cards and assigned colors to them, the colors
+                # need to be reset to A (Any). So, the next time a player takes a card, the card
+                # must have no color, and player will assign it on play.
+                for card in self.draw_pile:
+                    if card.card_type in {CardType.WILD, CardType.WILD4}:
+                        card.color = CardColor.A
+
+            # Draw 1 card
+            card = self.draw_pile.pop(0)
+            logger.info("Player %d draw %s card", player.player_id, card)
+
+            # Add card to a player's hand
+            player.cards.append(card)
 
     def shuffle_deck(self, draw_pile: list, discard_pile: list, player_cards: list) -> None:
         """Method to reshuffle a deck.

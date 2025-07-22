@@ -12,12 +12,8 @@ logger = init_logger("")
 
 # TODO
 #   1. Create a game object and call it in main
-#   2. Move initialization of discard_pile to init_round() method in the Dealer
-#      In fact, let's make a dealer a keeper of discard pile and draw pile. And
-#      shuffle the cards when necessary using methods defined within Dealer class.
-#   3. The part that shuffles discard pile and creates new draw pile when draw pile
-#       is empty, repeats 3 times in the code. Move that part to a method within
-#       the dealer and remove repeating code.
+#   2.
+#   3.
 
 def main(number_of_players: int) -> None:
     """Main entrypoint for the game.
@@ -55,7 +51,7 @@ def main(number_of_players: int) -> None:
         # Now we have non-action card at the top of the discard_pile, players can
         # start the game
 
-        # TODO continue game here with players. Here the round starts.
+        # Continue game here with players. Here the round starts.
         # We are going to play the game while all the players have cards.
         round_ended = False
 
@@ -93,18 +89,11 @@ def main(number_of_players: int) -> None:
                 # But we must draw cards only if it is the game against current player.
                 # If there are not enough cards, then pop(0) is going to throw an error.
                 # Therefore, we must make sure that there are cards in the draw pile.
-                for _ in range(2):
-                    # Draw one card from the top
-                    draw_card = dealer.draw_card()
-
-                    # Add card to a player's hand
-                    player_to_move.cards.append(draw_card)
+                dealer.draw_card(player=player_to_move, number_of_cards=2)
                 action_played = False
             elif active_card.card_type is CardType.WILD4 and action_played:
                 logger.info("Drawing four cards")
-                for _ in range(4):
-                    draw_card = dealer.draw_card()
-                    player_to_move.cards.append(draw_card)
+                dealer.draw_card(player=player_to_move, number_of_cards=4)
                 action_played = False
             else:
                 logger.info("Playing for the %s", active_card)
@@ -116,9 +105,7 @@ def main(number_of_players: int) -> None:
 
                 if card_to_play is None:
                     logger.info("Drawing a card")
-                    draw_card = dealer.draw_card()
-                    player_to_move.cards.append(draw_card)
-                    logger.info("Player %d draw %s card", player_to_move.player_id, draw_card)
+                    dealer.draw_card(player=player_to_move, number_of_cards=1)
                     card_to_play = player_to_move.play_card(active_card)
 
                 if card_to_play is None:
