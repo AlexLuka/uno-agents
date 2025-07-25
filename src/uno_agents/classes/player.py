@@ -254,18 +254,18 @@ class Dealer:
             # Add card to a player's hand
             player.cards.append(card)
 
-    def play_move(self, player: BasePlayer, action_played: bool) -> bool:
-        """TODO Review this method!!!"""
+    def play_move(self, player: BasePlayer, play_action_card: bool) -> bool:
+        """Method to make a move for a player based on the current top card."""
         active_card = self.top_card()
         logger.info("Current active card: %s", active_card)
 
         # make a move depending on the card at the top of discard pile
         # if active_card.is_action:
-        if active_card.card_type is CardType.SKIP and action_played:
+        if active_card.card_type is CardType.SKIP and play_action_card:
             logger.info("Skipping the move")
             return False
 
-        if active_card.card_type is CardType.DRAW2 and action_played:
+        if active_card.card_type is CardType.DRAW2 and play_action_card:
             logger.info("Drawing two cards")
             # But we must draw cards only if it is the game against current player.
             # If there are not enough cards, then pop(0) is going to throw an error.
@@ -273,7 +273,7 @@ class Dealer:
             self.draw_card(player=player, number_of_cards=2)
             return False
 
-        if active_card.card_type is CardType.WILD4 and action_played:
+        if active_card.card_type is CardType.WILD4 and play_action_card:
             logger.info("Drawing four cards")
             self.draw_card(player=player, number_of_cards=4)
             return False
@@ -302,17 +302,22 @@ class Dealer:
                 "Player %d still has no cards to play, moving to the next player",
                 player.player_id,
             )
-        else:
-            self.discard_pile.append(card_to_play)
-            logger.info("Player %d played %s", player.player_id, card_to_play)
+            return False
 
-            # Here card to play is not None for sure
-            if card_to_play.card_type is CardType.REV:
-                self.turn_direction *= -1
+        # At this point we know that the card_to_play is not None. Therefore,
+        # a current player played actual card, and that card must go to the top
+        # of the discard pile.
+        self.discard_pile.append(card_to_play)
+        logger.info("Player %d played %s", player.player_id, card_to_play)
 
-            elif card_to_play.card_type in {CardType.SKIP, CardType.DRAW2, CardType.WILD4}:
-                return True
-        return False
+        # If card type is Reverse, then we must switch the direction of a move.
+        if card_to_play.card_type is CardType.REV:
+            self.turn_direction *= -1
+            return False
+
+        # If cart type is an action to skip, or Draw 2 or 4 cards, then we must return
+        # True so the next player can play that action. Otherwise, return False.
+        return card_to_play.card_type in {CardType.SKIP, CardType.DRAW2, CardType.WILD4}
 
     def shuffle_deck(self, draw_pile: list, discard_pile: list, player_cards: list) -> None:
         """Method to reshuffle a deck.

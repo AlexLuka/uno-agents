@@ -67,7 +67,7 @@ def main(number_of_players: int) -> None:
         # then player 1 must take 2 cards, but player 2 must not! Player 2 must play
         # based on color or type now. Therefore, action is over for the card on the top
         # of the discard pile.
-        action_played = False
+        play_action_card = False
 
         while not round_ended:
             # Play the game
@@ -84,56 +84,57 @@ def main(number_of_players: int) -> None:
             logger.info("Current active card: %s", active_card)
 
             # make a move depending on the card at the top of discard pile
+            play_action_card = dealer.play_move(player_to_move, play_action_card)
             # if active_card.is_action:
-            if active_card.card_type is CardType.SKIP and action_played:
-                logger.info("Skipping the move")
-                action_played = False
-            elif active_card.card_type is CardType.DRAW2 and action_played:
-                logger.info("Drawing two cards")
-                # But we must draw cards only if it is the game against current player.
-                # If there are not enough cards, then pop(0) is going to throw an error.
-                # Therefore, we must make sure that there are cards in the draw pile.
-                dealer.draw_card(player=player_to_move, number_of_cards=2)
-                action_played = False
-            elif active_card.card_type is CardType.WILD4 and action_played:
-                logger.info("Drawing four cards")
-                dealer.draw_card(player=player_to_move, number_of_cards=4)
-                action_played = False
-            else:
-                logger.info("Playing for the %s", active_card)
-                # If card type "wild" it must have assigned color. Therefore
-                # we can place any color on top
-                # If it reverse, then also must be played by color.
-                # If it is number card, must play card
-                card_to_play = player_to_move.play_card(active_card)
+            # if active_card.card_type is CardType.SKIP and action_played:
+            #     logger.info("Skipping the move")
+            #     action_played = False
+            # elif active_card.card_type is CardType.DRAW2 and action_played:
+            #     logger.info("Drawing two cards")
+            #     # But we must draw cards only if it is the game against current player.
+            #     # If there are not enough cards, then pop(0) is going to throw an error.
+            #     # Therefore, we must make sure that there are cards in the draw pile.
+            #     dealer.draw_card(player=player_to_move, number_of_cards=2)
+            #     action_played = False
+            # elif active_card.card_type is CardType.WILD4 and action_played:
+            #     logger.info("Drawing four cards")
+            #     dealer.draw_card(player=player_to_move, number_of_cards=4)
+            #     action_played = False
+            # else:
+            #     logger.info("Playing for the %s", active_card)
+            #     # If card type "wild" it must have assigned color. Therefore
+            #     # we can place any color on top
+            #     # If it reverse, then also must be played by color.
+            #     # If it is number card, must play card
+            #     card_to_play = player_to_move.play_card(active_card)
 
-                if card_to_play is None:
-                    logger.info("Drawing a card")
-                    dealer.draw_card(player=player_to_move, number_of_cards=1)
+            #     if card_to_play is None:
+            #         logger.info("Drawing a card")
+            #         dealer.draw_card(player=player_to_move, number_of_cards=1)
 
-                    # Here we make a decision whether to play the card again because
-                    # in some situations a player may take good card and decide not
-                    # to play it immediately, but play later in the game. This scenario
-                    # is going to be possible if the play_card() method is non-deterministic,
-                    # but more LLM-driven.
-                    card_to_play = player_to_move.play_card(active_card)
+            #         # Here we make a decision whether to play the card again because
+            #         # in some situations a player may take good card and decide not
+            #         # to play it immediately, but play later in the game. This scenario
+            #         # is going to be possible if the play_card() method is non-deterministic,
+            #         # but more LLM-driven.
+            #         card_to_play = player_to_move.play_card(active_card)
 
-                if card_to_play is None:
-                    # Move to the next player
-                    logger.info(
-                        "Player %d still has no cards to play, moving to the next player",
-                        player_to_move.player_id,
-                    )
-                else:
-                    dealer.discard_pile.append(card_to_play)
-                    logger.info("Player %d played %s", player_to_move.player_id, card_to_play)
+            #     if card_to_play is None:
+            #         # Move to the next player
+            #         logger.info(
+            #             "Player %d still has no cards to play, moving to the next player",
+            #             player_to_move.player_id,
+            #         )
+            #     else:
+            #         dealer.discard_pile.append(card_to_play)
+            #         logger.info("Player %d played %s", player_to_move.player_id, card_to_play)
 
-                    # Here card to play is not None for sure
-                    if card_to_play.card_type is CardType.REV:
-                        dealer.turn_direction *= -1
+            #         # Here card to play is not None for sure
+            #         if card_to_play.card_type is CardType.REV:
+            #             dealer.turn_direction *= -1
 
-                    elif card_to_play.card_type in {CardType.SKIP, CardType.DRAW2, CardType.WILD4}:
-                        action_played = True
+            #         elif card_to_play.card_type in {CardType.SKIP, CardType.DRAW2, CardType.WILD4}:
+            #             action_played = True
 
             # What player must do:
             #   Player must do one of the following:
