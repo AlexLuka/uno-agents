@@ -127,7 +127,7 @@ class Dealer:
     """Dealer is going to a keeper of the game info."""
 
     draw_pile: list[Card]
-    discard_pile: list
+    discard_pile: list[Card]
     player_turn: int
     round: int
     turn_direction: int
@@ -319,12 +319,21 @@ class Dealer:
         # True so the next player can play that action. Otherwise, return False.
         return card_to_play.card_type in {CardType.SKIP, CardType.DRAW2, CardType.WILD4}
 
-    def shuffle_deck(self, draw_pile: list, discard_pile: list, player_cards: list) -> None:
-        """Method to reshuffle a deck.
+    def collect_cards(self) -> None:
+        """Method to gather cards on a table to a draw pile.
 
-        The reason why it maybe required is to clear the colors of wild cards.
+        This method must be called in the end of every round to collect cards
+        that are in draw pile, discard pile, and in player's hands. The cards
+        are going to be collected to a draw pile, and next round will begin.
         """
-        self.draw_pile = draw_pile + discard_pile + player_cards
+        # Currently cards are in player's hands, in a draw_pile, in a discard pile.
+        # We want to move every single card to a draw pile.
+        self.draw_pile.extend(self.discard_pile)
+        self.discard_pile = []
+
+        for player in self.players:
+            self.draw_pile.extend(player.cards)
+            player.cards = Hand()
 
         for card in self.draw_pile:
             if card.card_type in {CardType.WILD, CardType.WILD4}:

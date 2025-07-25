@@ -144,13 +144,8 @@ def main(number_of_players: int) -> None:
             dealer.has_winner = True
             break
 
-        # If no winner, put all the cards back into the deck
-        # TODO no need to pass arguments move to method def in Dealer class
-        dealer.shuffle_deck(
-            draw_pile=dealer.draw_pile,
-            discard_pile=dealer.discard_pile,
-            player_cards=list(itertools.chain(*[player.cards for player in players])),
-        )
+        # If no winner need to shuffle a deck again
+        dealer.collect_cards()
         logger.info("Dealer deck has %d cards", len(dealer.draw_pile))
 
 
