@@ -2,8 +2,8 @@
 
 import itertools
 
-from uno_agents.classes.cards import CardType
 from uno_agents.classes.player import Dealer, GeneralPlayer
+from uno_agents.game_constants import Constants
 from uno_agents.utils.logger import init_logger
 
 logger = init_logger("")
@@ -57,7 +57,7 @@ def main(number_of_players: int) -> None:
 
         # Continue game here with players. Here the round starts.
         # We are going to play the game while all the players have cards.
-        round_ended = False
+        # round_ended = False
 
         # This flag determines whether the action card has been played or not. To be
         # more precise, whether current player must take cards, or skip move because
@@ -69,7 +69,7 @@ def main(number_of_players: int) -> None:
         # of the discard pile.
         play_action_card = False
 
-        while not round_ended:
+        while True:
             # Play the game
             # The first player to move is player under round_start_index
             dealer.current_move += 1
@@ -83,69 +83,23 @@ def main(number_of_players: int) -> None:
             active_card = dealer.top_card()
             logger.info("Current active card: %s", active_card)
 
-            # make a move depending on the card at the top of discard pile
+            # Make a move depending on the card at the top of discard pile
+            # Player must do one of the following:
+            #   - Place one of the cards on hands to a discard pile
+            #   - Pick a card from the draw deck
+            #   - Skip a turn
             play_action_card = dealer.play_move(player_to_move, play_action_card)
-            # if active_card.is_action:
-            # if active_card.card_type is CardType.SKIP and action_played:
-            #     logger.info("Skipping the move")
-            #     action_played = False
-            # elif active_card.card_type is CardType.DRAW2 and action_played:
-            #     logger.info("Drawing two cards")
-            #     # But we must draw cards only if it is the game against current player.
-            #     # If there are not enough cards, then pop(0) is going to throw an error.
-            #     # Therefore, we must make sure that there are cards in the draw pile.
-            #     dealer.draw_card(player=player_to_move, number_of_cards=2)
-            #     action_played = False
-            # elif active_card.card_type is CardType.WILD4 and action_played:
-            #     logger.info("Drawing four cards")
-            #     dealer.draw_card(player=player_to_move, number_of_cards=4)
-            #     action_played = False
-            # else:
-            #     logger.info("Playing for the %s", active_card)
-            #     # If card type "wild" it must have assigned color. Therefore
-            #     # we can place any color on top
-            #     # If it reverse, then also must be played by color.
-            #     # If it is number card, must play card
-            #     card_to_play = player_to_move.play_card(active_card)
 
-            #     if card_to_play is None:
-            #         logger.info("Drawing a card")
-            #         dealer.draw_card(player=player_to_move, number_of_cards=1)
-
-            #         # Here we make a decision whether to play the card again because
-            #         # in some situations a player may take good card and decide not
-            #         # to play it immediately, but play later in the game. This scenario
-            #         # is going to be possible if the play_card() method is non-deterministic,
-            #         # but more LLM-driven.
-            #         card_to_play = player_to_move.play_card(active_card)
-
-            #     if card_to_play is None:
-            #         # Move to the next player
-            #         logger.info(
-            #             "Player %d still has no cards to play, moving to the next player",
-            #             player_to_move.player_id,
-            #         )
-            #     else:
-            #         dealer.discard_pile.append(card_to_play)
-            #         logger.info("Player %d played %s", player_to_move.player_id, card_to_play)
-
-            #         # Here card to play is not None for sure
-            #         if card_to_play.card_type is CardType.REV:
-            #             dealer.turn_direction *= -1
-
-            #         elif card_to_play.card_type in {CardType.SKIP, CardType.DRAW2, CardType.WILD4}:
-            #             action_played = True
-
-            # What player must do:
-            #   Player must do one of the following:
-            #       Either place one of the cards on hands to a discard pile
-            #       Pick a card from the draw deck
             for player in players:
                 logger.debug("\t%s", player)
 
             # Check the number of cards on players hands
             if len(player_to_move.cards) == 0:
-                round_ended = True  # TODO probably redundant, remove later if yes
+                logger.info(
+                    "Player %d is the winner of %d round",
+                    player_to_move.player_id,
+                    dealer.current_round,
+                )
                 break
 
             # Move to the next player
@@ -174,7 +128,7 @@ def main(number_of_players: int) -> None:
                 ),
             )
 
-        # Count points here
+        # Count points after the end of the round
         logger.info("Counting points")
 
         round_points = 0
@@ -186,7 +140,9 @@ def main(number_of_players: int) -> None:
         round_winner.points += round_points
 
         # Let's exit after 1 round until we make the game body here
-        dealer.has_winner = True
+        if round_winner.points >= Constants.MAX_POINTS:
+            dealer.has_winner = True
+            break
 
         # If no winner, put all the cards back into the deck
         # TODO no need to pass arguments move to method def in Dealer class
