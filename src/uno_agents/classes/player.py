@@ -126,11 +126,22 @@ class GeneralPlayer(BasePlayer):
 class Dealer:
     """Dealer is going to a keeper of the game info."""
 
+    # Pile of cards where to get cards from
     draw_pile: list[Card]
+
+    # Pile of cards where to put cards during the game
     discard_pile: list[Card]
-    player_turn: int
-    round: int
+
+    # This can be either 1 or -1.
+    # 1 indicates normal move order, while
+    # -1 indicates reversed move order.
     turn_direction: int
+
+    # Number of the current round.
+    current_round: int
+
+    # Number of the current move within a round.
+    current_move: int
 
     def __init__(self, players: list[GeneralPlayer]) -> None:
         """When we init the dealer we are going to set the game settings before the game starts."""
@@ -141,9 +152,8 @@ class Dealer:
 
         # Determine the order of turns in each game
         shuffle(players)
-        self.turn_order = [player.player_id for player in players]          # TODO do I need this???
-        print(f"turn_order = {self.turn_order}")
 
+        # Set direction to standard: 1
         self.turn_direction = 1 # OR -1
 
         # Index of a layer that is going to start the round. This is not
@@ -341,16 +351,11 @@ class Dealer:
 
     def __str__(self) -> str:
         """Returns a game state as a string."""
-        player = (
-            "Unknown" if self.round_start_index < 0 else
-            self.turn_order[self.round_start_index]
-        )
         return f"""Game state: round {self.current_round}
         Number of cards: {len(self.draw_pile)}
         Number of players: {self.number_of_players}
         Round start index: {self.round_start_index}
-        Players order: {self.turn_order}
-        Player to start the round: {player}
+        Player to start the round: {self.players[0]}
         Game direction: {self.turn_direction}
         {", ".join(str(card) for card in self.draw_pile)}
         """
