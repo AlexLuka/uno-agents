@@ -1,7 +1,5 @@
 """Module with main entrypoint for the agents."""
 
-import itertools
-
 from uno_agents.classes.player import Dealer, GeneralPlayer
 from uno_agents.game_constants import Constants
 from uno_agents.utils.logger import init_logger
@@ -9,15 +7,12 @@ from uno_agents.utils.logger import init_logger
 logger = init_logger("")
 
 
-# TODO
-#   1. Create a game object and call it in main: probably dealer is the one!
-#   2.
-#   3. Rethink shuffle_deck() method in Dealer class - must collect all the cards and shuffle - create new draw pile
+# Near term plan:
+#   1. Add a class to keep all the game statistics and print it in the end of each round.
 #   4. Update readme
 #   5. Make a player that plays randomly
 #   6. Make the first LLM player.
 #   7. Create a documentation
-#   8. Move all the if statements about active_card.card_type to some method or function to make code simplier.
 
 def main(number_of_players: int) -> None:
     """Main entrypoint for the game.
@@ -54,10 +49,6 @@ def main(number_of_players: int) -> None:
 
         # Now we have non-action card at the top of the discard_pile, players can
         # start the game
-
-        # Continue game here with players. Here the round starts.
-        # We are going to play the game while all the players have cards.
-        # round_ended = False
 
         # This flag determines whether the action card has been played or not. To be
         # more precise, whether current player must take cards, or skip move because
