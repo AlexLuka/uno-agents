@@ -5,7 +5,7 @@ from abc import ABC, abstractmethod
 from random import shuffle
 from secrets import choice
 
-from uno_agents.classes.cards import Card, CardColor, CardType, Deck, init_deck
+from uno_agents.classes.cards import Card, CardColor, CardType, Deck, Hand, init_deck
 
 logger = logging.getLogger(__name__)
 
@@ -17,14 +17,30 @@ class BasePlayer(ABC):
     """
 
     player_id: int
-    cards: list[Card]
-    points: int
+    cards: Hand[Card]
+
+    # Total number of points a player has during a game.
+    _points: int
 
     def __init__(self, player_id: int) -> None:
         """Player initialization method."""
         self.player_id = player_id
-        self.cards = []
+        self.cards = Hand()
         self.points = 0
+
+    def hand_points(self) -> int:
+        """Property to return number of points in a Player's hand."""
+        logger.debug("Player %d has %d points on hand", self.player_id, self.cards.points)
+        return self.cards.points
+
+    @property
+    def points(self) -> int:
+        """Property to access number of Player's points."""
+        return self._points
+
+    @points.setter
+    def points(self, value: int) -> None:
+        self._points = value
 
     @abstractmethod
     def play_card(self, current_card: Card, *args: list, **kwargs: dict) -> Card:
@@ -110,11 +126,22 @@ class GeneralPlayer(BasePlayer):
 class Dealer:
     """Dealer is going to a keeper of the game info."""
 
+    # Pile of cards where to get cards from
     draw_pile: list[Card]
-    discard_pile: list
-    player_turn: int
-    round: int
+
+    # Pile of cards where to put cards during the game
+    discard_pile: list[Card]
+
+    # This can be either 1 or -1.
+    # 1 indicates normal move order, while
+    # -1 indicates reversed move order.
     turn_direction: int
+
+    # Number of the current round.
+    current_round: int
+
+    # Number of the current move within a round.
+    current_move: int
 
     def __init__(self, players: list[GeneralPlayer]) -> None:
         """When we init the dealer we are going to set the game settings before the game starts."""
@@ -125,9 +152,8 @@ class Dealer:
 
         # Determine the order of turns in each game
         shuffle(players)
-        self.turn_order = [player.player_id for player in players]          # TODO do I need this???
-        print(f"turn_order = {self.turn_order}")
 
+        # Set direction to standard: 1
         self.turn_direction = 1 # OR -1
 
         # Index of a layer that is going to start the round. This is not
@@ -238,12 +264,86 @@ class Dealer:
             # Add card to a player's hand
             player.cards.append(card)
 
-    def shuffle_deck(self, draw_pile: list, discard_pile: list, player_cards: list) -> None:
-        """Method to reshuffle a deck.
+    def play_move(self, player: BasePlayer, play_action_card: bool) -> bool:
+        """Method to make a move for a player based on the current top card."""
+        active_card = self.top_card()
+        logger.info("Current active card: %s", active_card)
 
-        The reason why it maybe required is to clear the colors of wild cards.
+        # make a move depending on the card at the top of discard pile
+        # if active_card.is_action:
+        if active_card.card_type is CardType.SKIP and play_action_card:
+            logger.info("Skipping the move")
+            return False
+
+        if active_card.card_type is CardType.DRAW2 and play_action_card:
+            logger.info("Drawing two cards")
+            # But we must draw cards only if it is the game against current player.
+            # If there are not enough cards, then pop(0) is going to throw an error.
+            # Therefore, we must make sure that there are cards in the draw pile.
+            self.draw_card(player=player, number_of_cards=2)
+            return False
+
+        if active_card.card_type is CardType.WILD4 and play_action_card:
+            logger.info("Drawing four cards")
+            self.draw_card(player=player, number_of_cards=4)
+            return False
+
+        logger.info("Playing for the %s", active_card)
+        # If card type "wild" it must have assigned color. Therefore
+        # we can place any color on top
+        # If it reverse, then also must be played by color.
+        # If it is number card, must play card
+        card_to_play = player.play_card(active_card)
+
+        if card_to_play is None:
+            logger.info("Drawing a card")
+            self.draw_card(player=player, number_of_cards=1)
+
+            # Here we make a decision whether to play the card again because
+            # in some situations a player may take good card and decide not
+            # to play it immediately, but play later in the game. This scenario
+            # is going to be possible if the play_card() method is non-deterministic,
+            # but more LLM-driven.
+            card_to_play = player.play_card(active_card)
+
+        if card_to_play is None:
+            # Move to the next player
+            logger.info(
+                "Player %d still has no cards to play, moving to the next player",
+                player.player_id,
+            )
+            return False
+
+        # At this point we know that the card_to_play is not None. Therefore,
+        # a current player played actual card, and that card must go to the top
+        # of the discard pile.
+        self.discard_pile.append(card_to_play)
+        logger.info("Player %d played %s", player.player_id, card_to_play)
+
+        # If card type is Reverse, then we must switch the direction of a move.
+        if card_to_play.card_type is CardType.REV:
+            self.turn_direction *= -1
+            return False
+
+        # If cart type is an action to skip, or Draw 2 or 4 cards, then we must return
+        # True so the next player can play that action. Otherwise, return False.
+        return card_to_play.card_type in {CardType.SKIP, CardType.DRAW2, CardType.WILD4}
+
+    def collect_cards(self) -> None:
+        """Method to gather cards on a table to a draw pile.
+
+        This method must be called in the end of every round to collect cards
+        that are in draw pile, discard pile, and in player's hands. The cards
+        are going to be collected to a draw pile, and next round will begin.
         """
-        self.draw_pile = draw_pile + discard_pile + player_cards
+        # Currently cards are in player's hands, in a draw_pile, in a discard pile.
+        # We want to move every single card to a draw pile.
+        self.draw_pile.extend(self.discard_pile)
+        self.discard_pile = []
+
+        for player in self.players:
+            self.draw_pile.extend(player.cards)
+            player.cards = Hand()
 
         for card in self.draw_pile:
             if card.card_type in {CardType.WILD, CardType.WILD4}:
@@ -251,16 +351,11 @@ class Dealer:
 
     def __str__(self) -> str:
         """Returns a game state as a string."""
-        player = (
-            "Unknown" if self.round_start_index < 0 else
-            self.turn_order[self.round_start_index]
-        )
         return f"""Game state: round {self.current_round}
         Number of cards: {len(self.draw_pile)}
         Number of players: {self.number_of_players}
         Round start index: {self.round_start_index}
-        Players order: {self.turn_order}
-        Player to start the round: {player}
+        Player to start the round: {self.players[0]}
         Game direction: {self.turn_direction}
         {", ".join(str(card) for card in self.draw_pile)}
         """
