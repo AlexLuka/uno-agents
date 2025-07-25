@@ -14,7 +14,7 @@ maybe add workflow with docs. So, this is my pet project to have some fun.
 + [ ] Extend LLM agents to OpenAI models family, Grok from xAI, and Anthropic models.
 + [ ] Think how to collect statistics about the game. Do we need SQL + cache? This is done when
       the list is updated with new action items. Add all the new action items to the bottom.
-+ [ ] Maybe add a class that stores all the game stat?
++ [ ] Maybe add a class that stores all the game stat? Yes.
 + [ ] Parametrize game inputs with arguments
 + [ ] Generate documentation workflow
 + [ ] Add unit tests for functions, classes that are more or less stable
