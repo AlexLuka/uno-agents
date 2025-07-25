@@ -142,6 +142,11 @@ def main(number_of_players: int) -> None:
         # Let's exit after 1 round until we make the game body here
         if round_winner.points >= Constants.MAX_POINTS:
             dealer.has_winner = True
+            logger.info(
+                "Player %d has %d points and the game winner!!!",
+                round_winner.player_id,
+                round_winner.points,
+            )
             break
 
         # If no winner need to shuffle a deck again
