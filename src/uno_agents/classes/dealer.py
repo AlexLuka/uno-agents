@@ -351,12 +351,45 @@ class Dealer:
         Verify the game initial settings before game begins.
         Game is going to continue until someone wins.
         """
+        if not self.is_game_properly_set():
+            logger.info("Game cannot start.")
+            return
+
         # Shuffle players before the game starts
         shuffle(self.players)
 
         while not self.has_winner:
             logger.info("=" * 50)
             self.play_round()
+
+    def is_game_properly_set(self) -> bool:
+        """Method to verify game settings before game starts.
+
+        Returns:
+            True if game properly set and False otherwise.
+        """
+        logger.info("Verifying game settings before game starts.")
+
+        if len(self.players) < Constants.MIN_PLAYERS:
+            logger.error(
+                "Cannot start the game because not enough players to play. Minimum required "
+                "number o players is %d while the game currently has only %d players!",
+                Constants.MIN_PLAYERS,
+                len(self.players),
+            )
+            return False
+
+        if len(self.players) > Constants.MAX_PLAYERS:
+            logger.error(
+                "Cannot start the game because too many players to play. Maximum allowed "
+                "number o players is %d while the game currently has %d players!",
+                Constants.MAX_PLAYERS,
+                len(self.players),
+            )
+            return False
+
+        # All properly set
+        return True
 
     def collect_cards(self) -> None:
         """Method to gather cards on a table to a draw pile.
