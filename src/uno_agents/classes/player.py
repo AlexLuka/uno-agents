@@ -70,6 +70,9 @@ class GeneralPlayer(BasePlayer):
     def play_card(self, current_card: Card) -> Card:
         """Method to select a card to play.
 
+        Args:
+            current_card: current card at the top of discard pile.
+
         Returns:
             Card to play or None if no card to pick. Also must say something of play wild card.
         """
