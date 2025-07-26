@@ -10,7 +10,6 @@ logger = init_logger("")
 # Near term plan:
 #   1. Add a class to keep all the game statistics and print it in the end of each round.
 #   2. Create each player individually based on the inputs
-#   3. Add each player individually to the game
 #   4. Update readme
 #   5. Make a player that plays randomly
 #   6. Make the first LLM player.
