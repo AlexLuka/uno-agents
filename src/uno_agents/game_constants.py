@@ -8,7 +8,7 @@ class Constants:
     MAX_POINTS = 500
 
     # Limitation on number of players
-    MIN_PLAYERS: 2
+    MIN_PLAYERS = 2
     MAX_PLAYERS = 10
 
     # Let's start with standard deck that has 108 cards. Maybe add 112
