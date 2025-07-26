@@ -2,11 +2,9 @@
 
 import logging
 from abc import ABC, abstractmethod
-from random import shuffle
 from secrets import choice
 
-from uno_agents.classes.cards import Card, CardColor, CardType, Deck, Hand, init_deck
-from uno_agents.game_constants import Constants
+from uno_agents.classes.cards import Card, CardColor, CardType, Hand
 
 logger = logging.getLogger(__name__)
 
