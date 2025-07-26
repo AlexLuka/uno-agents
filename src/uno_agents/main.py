@@ -1,6 +1,7 @@
 """Module with main entrypoint for the agents."""
 
-from uno_agents.classes.player import Dealer, GeneralPlayer
+from uno_agents.classes.dealer import Dealer
+from uno_agents.classes.player import GeneralPlayer
 from uno_agents.utils.logger import init_logger
 
 logger = init_logger("")
@@ -8,6 +9,8 @@ logger = init_logger("")
 
 # Near term plan:
 #   1. Add a class to keep all the game statistics and print it in the end of each round.
+#   2. Create each player individually based on the inputs
+#   3. Add each player individually to the game
 #   4. Update readme
 #   5. Make a player that plays randomly
 #   6. Make the first LLM player.
@@ -24,12 +27,13 @@ def main(number_of_players: int) -> None:
     Args:
         number_of_players (int): total number of players to be in the game.
     """
+    # Create a dealer
+    dealer = Dealer()
+
     # Initialize all the players. Each player is going to have a unique integer ID
     # starting from 0.
-    players = [GeneralPlayer(i) for i in range(number_of_players)]
-
-    # Create a dealer
-    dealer = Dealer(players=players)
+    for i in range(number_of_players):
+        dealer.add_player(GeneralPlayer(i))
     logger.debug(dealer)
 
     # Play the game

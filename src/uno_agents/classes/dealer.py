@@ -17,6 +17,9 @@ logger = logging.getLogger(__name__)
 class Dealer:
     """Dealer is going to a keeper of the game info."""
 
+    # List of players, in the order which they supposed to move
+    players: list[BasePlayer]
+
     # Pile of cards where to get cards from
     draw_pile: list[Card]
 
@@ -34,15 +37,12 @@ class Dealer:
     # Number of the current move within a round.
     current_move: int
 
-    def __init__(self, players: list[BasePlayer]) -> None:
+    def __init__(self) -> None:
         """When we init the dealer we are going to set the game settings before the game starts."""
-        self.players = players
+        self.players = []
 
         # Keep the number of players
-        self.number_of_players = len(players)
-
-        # Determine the order of turns in each game
-        shuffle(players)
+        self.number_of_players = 0
 
         # Set direction to standard: 1
         self.turn_direction = 1 # OR -1
@@ -73,6 +73,12 @@ class Dealer:
 
         # Move counter
         self.current_move = 0
+
+    def add_player(self, player: BasePlayer) -> None:
+        """Method to add a player to the game."""
+        self.players.append(player)
+        self.number_of_players += 1
+        logger.info("Added player %s to the game", player)
 
     def init_round(self) -> Deck[Card]:
         """Method to init the round.
@@ -342,8 +348,12 @@ class Dealer:
     def play_game(self) -> None:
         """Method to play the game.
 
+        Verify the game initial settings before game begins.
         Game is going to continue until someone wins.
         """
+        # Shuffle players before the game starts
+        shuffle(self.players)
+
         while not self.has_winner:
             logger.info("=" * 50)
             self.play_round()
@@ -371,7 +381,8 @@ class Dealer:
     def __str__(self) -> str:
         """Returns a game state as a string."""
         return f"""Game state: round {self.current_round}
-        Number of cards: {len(self.draw_pile)}
+        Number of cards in draw pile: {len(self.draw_pile)}
+        Number of cards in discard pile: {len(self.discard_pile)}
         Number of players: {self.number_of_players}
         Round start index: {self.round_start_index}
         Player to start the round: {self.players[0]}
