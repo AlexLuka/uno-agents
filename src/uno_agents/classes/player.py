@@ -6,6 +6,7 @@ from random import shuffle
 from secrets import choice
 
 from uno_agents.classes.cards import Card, CardColor, CardType, Deck, Hand, init_deck
+from uno_agents.game_constants import Constants
 
 logger = logging.getLogger(__name__)
 
@@ -171,8 +172,11 @@ class Dealer:
         # This is the deck
         self.draw_pile = init_deck()
 
-        # Flag that we have a winner
+        # Flag that we have a game winner
         self.has_winner = False
+
+        # Flag that we have a round winner
+        self.has_round_winner = False
 
         # Round counter
         self.current_round = 0
@@ -225,6 +229,7 @@ class Dealer:
 
             if not card.is_action:
                 break
+
         # This method doesn't return anything because the dealer is a keeper of the piles
 
     def top_card(self) -> Card:
@@ -328,6 +333,130 @@ class Dealer:
         # If cart type is an action to skip, or Draw 2 or 4 cards, then we must return
         # True so the next player can play that action. Otherwise, return False.
         return card_to_play.card_type in {CardType.SKIP, CardType.DRAW2, CardType.WILD4}
+
+    def play_round(self) -> None:
+        """Method to play a full round.
+
+        In this method we make all the steps required to play a round. And reset the conditions in
+        the end of the round, except the game statistics.
+        """
+        # Initialize the round
+        self.init_round()
+        logger.debug("dealer=%s", self)
+        logger.debug("draw_pile=%s", self.draw_pile)
+        logger.debug("discard_pile=%s", self.discard_pile)
+        logger.info("-" * 50)
+
+        # Plot what players have on hands
+        for player in self.players:
+            logger.debug("player=%s", player)
+
+        logger.info("First discard card: %s", self.top_card())
+
+        # Now we have non-action card at the top of the discard_pile, players can
+        # start the game
+
+        # This flag determines whether the action card has been played or not. To be
+        # more precise, whether current player must take cards, or skip move because
+        # previous player placed that action card to the discard pile. We need this in
+        # order to avoid players to stuck in infinite loop if an action card is played.
+        # For example, if we have 3 players (0, 1, 2) and player 0 plays "draw 2" card
+        # then player 1 must take 2 cards, but player 2 must not! Player 2 must play
+        # based on color or type now. Therefore, action is over for the card on the top
+        # of the discard pile.
+        play_action_card = False
+
+        while True:
+            # Play the game
+            # The first player to move is player under round_start_index
+            self.current_move += 1
+            logger.info("%s", "-" * 25)
+            logger.info("Round %d, Move %d", self.current_round, self.current_move)
+
+            # This is the player who must make the move
+            player_to_move = self.players[self.current_player_index]
+            logger.info("Player %d is moving", player_to_move.player_id)
+
+            active_card = self.top_card()
+            logger.info("Current active card: %s", active_card)
+
+            # Make a move depending on the card at the top of discard pile
+            # Player must do one of the following:
+            #   - Place one of the cards on hands to a discard pile
+            #   - Pick a card from the draw deck
+            #   - Skip a turn
+            play_action_card = self.play_move(player_to_move, play_action_card)
+
+            for player in self.players:
+                logger.debug("\t%s", player)
+
+            # Check the number of cards on players hands
+            if len(player_to_move.cards) == 0:
+                logger.info(
+                    "Player %d is the winner of %d round",
+                    player_to_move.player_id,
+                    self.current_round,
+                )
+                break
+
+            # Move to the next player
+            # If we have 5 players this is going to work like following:
+            #   Normal turn (turn_direction = 1):
+            #       current_player_index = 0 -> (0 + 1) % 5 = 1
+            #       current_player_index = 2 -> (2 + 1) % 5 = 3
+            #       current_player_index = 4 -> (4 + 1) % 5 = 0
+            #   Reversed turn (turn_direction = -1):
+            #       current_player_index = 0 -> (0 - 1) % 5 = 4
+            #       current_player_index = 1 -> (1 - 1) % 5 = 0
+            #       current_player_index = 4 -> (4 - 1) % 5 = 3
+            self.current_player_index = (
+                (self.current_player_index + self.turn_direction) % self.number_of_players
+            )
+
+            # Check number of cards in the draw pile
+            logger.debug("Cards in draw pile: %d", len(self.draw_pile))
+            logger.debug("Cards in discard pile: %d", len(self.discard_pile))
+            logger.debug(
+                "Cards in the game: %d",
+                (
+                    len(self.draw_pile) +
+                    len(self.discard_pile) +
+                    sum([len(player.cards) for player in self.players])
+                ),
+            )
+
+        # Count points after the end of the round
+        logger.info("Counting points")
+
+        round_points = 0
+        for player in self.players:
+            round_points += player.hand_points()
+
+        round_winner = self.players[self.current_player_index]
+        logger.info("Player %d gets %d points", round_winner.player_id, round_points)
+        round_winner.points += round_points
+
+        # Let's exit after 1 round until we make the game body here
+        if round_winner.points >= Constants.MAX_POINTS:
+            logger.info(
+                "Player %d has %d points and the game winner!!!",
+                round_winner.player_id,
+                round_winner.points,
+            )
+            self.has_winner = True
+
+        # If no winner need to shuffle a deck again
+        self.collect_cards()
+        logger.info("Dealer deck has %d cards", len(self.draw_pile))
+
+    def play_game(self) -> None:
+        """Method to play the game.
+
+        Game is going to continue until someone wins.
+        """
+        while not self.has_winner:
+            logger.info("=" * 50)
+            self.play_round()
 
     def collect_cards(self) -> None:
         """Method to gather cards on a table to a draw pile.
