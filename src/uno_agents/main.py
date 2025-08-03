@@ -38,6 +38,9 @@ def main(number_of_players: int) -> None:
     # Play the game
     dealer.play_game()
 
+    # Print the game statistics once the game has finished
+    logger.info(dealer.game_stat)
+
 
 if __name__ == "__main__":
     main(number_of_players=5)

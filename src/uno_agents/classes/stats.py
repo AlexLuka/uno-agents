@@ -31,3 +31,39 @@ class GameStatistics(BaseModel):
     winner_name: str = None
     winner_points: int = None
     winner_class: str = None
+
+    def __str__(self) -> str:
+        """Method to customize the print of game statistics to stdout."""
+        # Need to generate a table like
+        # | round | ... Players ... |
+
+        longest_player_name = len(max(self.players_names, key=len))
+
+        # Add the header row
+        table = (
+            f"|{'round':<10}| " +
+            " | ".join([f"{pn:<{longest_player_name}}" for pn in self.players_names]) +
+            " |\n")
+
+        # Add a separation line between header row and the data
+        table += (
+            f"\t|{'-'*10}|" +
+            f"{'-' * (longest_player_name + 2)}|" * self.number_of_players +
+            "\n")
+
+        # Add all the data
+        for i, points in enumerate(self.players_end_of_round_points):
+            table += (
+                f"\t|{i + 1:<10}| " +
+                " | ".join([f"{p:<{longest_player_name}}" for p in points]) +
+                " |\n")
+
+        return f"""
+        number_of_players: {self.number_of_players}
+        number_of_rounds: {self.number_of_rounds}
+        {table}
+
+        Winner: {self.winner_name}
+        Winner points: {self.winner_points}
+        Winner class: {self.winner_class}
+        """
