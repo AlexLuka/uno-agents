@@ -73,9 +73,9 @@ class BasePlayer(ABC):
 class GeneralPlayer(BasePlayer):
     """Docstring."""
 
-    def __init__(self, player_id: int) -> None:
+    def __init__(self, player_id: int, name: str | None = None) -> None:
         """Docstring."""
-        super().__init__(player_id=player_id)
+        super().__init__(player_id=player_id, name=name)
 
     def play_card(self, current_card: Card) -> Card:
         """Method to select a card to play.
