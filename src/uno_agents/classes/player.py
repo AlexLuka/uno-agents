@@ -133,3 +133,7 @@ class GeneralPlayer(BasePlayer):
             return card
 
         return card
+
+
+class RandomPlayer(BasePlayer):
+    pass
