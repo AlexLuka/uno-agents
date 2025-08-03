@@ -5,6 +5,7 @@ from abc import ABC, abstractmethod
 from secrets import choice
 
 from uno_agents.classes.cards import Card, CardColor, CardType, Hand
+from uno_agents.collections.names import player_names
 
 logger = logging.getLogger(__name__)
 
@@ -15,17 +16,23 @@ class BasePlayer(ABC):
     It must show what methods must be implemented for custom player class.
     """
 
+    name: str
     player_id: int
     cards: Hand[Card]
 
     # Total number of points a player has during a game.
     _points: int
 
-    def __init__(self, player_id: int) -> None:
+    def __init__(self, player_id: int, name: str | None = None) -> None:
         """Player initialization method."""
         self.player_id = player_id
         self.cards = Hand()
         self.points = 0
+
+        if name:
+            self.name = name
+        else:
+            self.name = choice(player_names)
 
     def hand_points(self) -> int:
         """Property to return number of points in a Player's hand."""
@@ -55,6 +62,13 @@ class BasePlayer(ABC):
                 similar to those passed with *args.
         """
 
+    def __str__(self) -> str:
+        """Human-readable representation of GeneralPlayer object."""
+        return (
+            f"Player {self.name} [ID={self.player_id}]: "
+            f"{', '.join(str(card) for card in self.cards)}"
+        )
+
 
 class GeneralPlayer(BasePlayer):
     """Docstring."""
@@ -62,10 +76,6 @@ class GeneralPlayer(BasePlayer):
     def __init__(self, player_id: int) -> None:
         """Docstring."""
         super().__init__(player_id=player_id)
-
-    def __str__(self) -> str:
-        """Human-readable representation of GeneralPlayer object."""
-        return f"Player {self.player_id}: {', '.join(str(card) for card in self.cards)}"
 
     def play_card(self, current_card: Card) -> Card:
         """Method to select a card to play.

@@ -21,11 +21,13 @@ class GameStatistics(BaseModel):
     Statistics object is created by a dealer in the end of each game.
     """
 
-    number_of_players: int
-    number_of_rounds: int
-    number_of_round_moves: list[int]
-    players_names: list[str]
-    players_scores: list[int]
-    winner_name: str
-    winner_score: int
-    winner_class: str
+    number_of_players: int = 0
+    number_of_rounds: int = 0
+    number_of_round_moves: list[int] = []
+
+    players_names: list[str] = []
+    players_end_of_round_points: list[list[int]] = []
+
+    winner_name: str = None
+    winner_points: int = None
+    winner_class: str = None

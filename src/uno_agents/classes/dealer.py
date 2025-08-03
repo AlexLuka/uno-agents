@@ -9,6 +9,7 @@ from random import shuffle
 
 from uno_agents.classes.cards import Card, CardColor, CardType, Deck, Hand, init_deck
 from uno_agents.classes.player import BasePlayer
+from uno_agents.classes.stats import GameStatistics
 from uno_agents.game_constants import Constants
 
 logger = logging.getLogger(__name__)
@@ -73,6 +74,9 @@ class Dealer:
 
         # Move counter
         self.current_move = 0
+
+        # Class to store game statistics
+        self.game_stat = GameStatistics()
 
     def add_player(self, player: BasePlayer) -> None:
         """Method to add a player to the game."""
@@ -324,9 +328,12 @@ class Dealer:
         # Count points after the end of the round
         logger.info("Counting points")
 
-        round_points = 0
-        for player in self.players:
-            round_points += player.hand_points()
+        end_of_round_points = [player.hand_points() for player in self.players]
+        self.game_stat.players_end_of_round_points.append(end_of_round_points)
+        round_points = sum(end_of_round_points)
+
+        # Add number of moves in the current round to the game statistics
+        self.game_stat.number_of_round_moves.append(self.current_move)
 
         round_winner = self.players[self.current_player_index]
         logger.info("Player %d gets %d points", round_winner.player_id, round_points)
@@ -340,6 +347,14 @@ class Dealer:
                 round_winner.points,
             )
             self.has_winner = True
+
+            # This is the end of the game!
+            # Update the game statistics!
+            self.game_stat.number_of_rounds = self.current_round
+
+            self.game_stat.winner_name = round_winner.name
+            self.game_stat.winner_points = round_winner.points
+            self.game_stat.winner_class = type(round_winner).__name__
 
         # If no winner need to shuffle a deck again
         self.collect_cards()
@@ -357,6 +372,10 @@ class Dealer:
 
         # Shuffle players before the game starts
         shuffle(self.players)
+
+        # Setup statistics
+        self.game_stat.number_of_players = len(self.players)
+        self.game_stat.players_names = [player.name for player in self.players]
 
         while not self.has_winner:
             logger.info("=" * 50)
@@ -410,6 +429,10 @@ class Dealer:
         for card in self.draw_pile:
             if card.card_type in {CardType.WILD, CardType.WILD4}:
                 card.color = CardColor.A
+
+    def get_game_statistics(self) -> GameStatistics:
+        """Docstring."""
+        return self.game_stat
 
     def __str__(self) -> str:
         """Returns a game state as a string."""
