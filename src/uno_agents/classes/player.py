@@ -136,4 +136,31 @@ class GeneralPlayer(BasePlayer):
 
 
 class RandomPlayer(BasePlayer):
-    pass
+    """Class for a player that randomly selects a card to play."""
+
+    def play_card(self, current_card: Card) -> Card:
+        """Method to select a card to play.
+
+        Args:
+            current_card: current card at the top of discard pile.
+
+        Returns:
+            Card to play or None if no card to pick. Also must say something of play wild card.
+        """
+        # List all the cards that are currently playable
+        playable_cards = []
+
+        for i, card in enumerate(self.cards):
+            if ((card.color is CardColor.A) or
+                (card.color is current_card.color) or
+                (card.card_type is current_card.card_type)):
+                playable_cards.append((card, i))
+
+        logger.debug("Player %d has following playable cards: %s", self.player_id, playable_cards)
+
+        if len(playable_cards) == 0:
+            # This means that we do not have a playable cards
+            return None
+
+        logger.debug("Player %d selected a card randomly", self.player_id)
+        return choice(playable_cards)
