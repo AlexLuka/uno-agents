@@ -154,7 +154,7 @@ class RandomPlayer(BasePlayer):
             if ((card.color is CardColor.A) or
                 (card.color is current_card.color) or
                 (card.card_type is current_card.card_type)):
-                playable_cards.append((card, i))
+                playable_cards.append(i)
 
         logger.debug("Player %d has following playable cards: %s", self.player_id, playable_cards)
 
@@ -163,4 +163,6 @@ class RandomPlayer(BasePlayer):
             return None
 
         logger.debug("Player %d selected a card randomly", self.player_id)
-        return choice(playable_cards)
+        index =  choice(playable_cards)
+
+        return self.cards.pop(index)

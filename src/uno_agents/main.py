@@ -1,7 +1,7 @@
 """Module with main entrypoint for the agents."""
 
 from uno_agents.classes.dealer import Dealer
-from uno_agents.classes.player import GeneralPlayer
+from uno_agents.classes.player import GeneralPlayer, RandomPlayer
 from uno_agents.utils.logger import init_logger
 
 logger = init_logger("")
@@ -30,8 +30,9 @@ def main(number_of_players: int) -> None:
 
     # Initialize all the players. Each player is going to have a unique integer ID
     # starting from 0.
-    for i in range(number_of_players):
+    for i in range(number_of_players-1):
         dealer.add_player(GeneralPlayer(i))
+    dealer.add_player(RandomPlayer(player_id=i+1, name="Mr Random"))
     logger.debug(dealer)
 
     # Play the game
