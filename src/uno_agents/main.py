@@ -10,7 +10,6 @@ logger = init_logger("")
 # Near term plan:
 #   2. Create each player individually based on the inputs
 #   4. Update readme
-#   5. Make a player that plays randomly
 #   6. Make the first LLM player.
 #   7. Create a documentation
 
