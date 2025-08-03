@@ -8,7 +8,7 @@ class GameStatistics(BaseModel):
 
     The game statistics is going to be the following:
     - Number of players
-    - Player's names
+    - Player's names with the order they played in a game
     - Number of rounds to win a game
     - Number of moves in each round
     - Name of a player who win a game. This is not the same as a type of a player.
@@ -17,6 +17,8 @@ class GameStatistics(BaseModel):
       from the same class! This means that we might need to create more individual
       instances and store them in database.
     - Number of points each player got by the end of the game.
+
+    Statistics object is created by a dealer in the end of each game.
     """
 
     number_of_players: int
