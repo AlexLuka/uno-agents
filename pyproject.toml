@@ -33,6 +33,7 @@ dependencies = [
     "typing-inspection==0.4.1",
     "pydantic-core==2.33.2",
     "pydantic==2.11.7",
+    "click==8.2.1",     # For CLI creation
 ]
 
 
