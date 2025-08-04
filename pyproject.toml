@@ -51,7 +51,7 @@ packages = {find = {where = ["src"]}}
 #       Entrypoints
 #
 [project.entry-points."console_scripts"]
-gha = "uno_agents.main:main"
+uno = "uno_agents.main:main"
 
 #
 #       Dependencies
@@ -86,6 +86,7 @@ namespace-packages = ["src"]
 ignore = [
     "D401",         # Checks for docstring first lines that are not in an imperative mood (https://docs.astral.sh/ruff/rules/non-imperative-mood/)
     "D413",         # Checks for missing blank lines after the last section of a multiline docstring (https://docs.astral.sh/ruff/rules/missing-blank-line-after-last-section/)
+    "EM101",        # Checks for raw string in exception (https://docs.astral.sh/ruff/rules/raw-string-in-exception/)
     "FBT001",       # Checks for the use of boolean positional arguments in function definitions, as determined by the presence of a type hint containing bool as an evident subtype - e.g. bool, bool | int, typing.Optional[bool], etc (https://docs.astral.sh/ruff/rules/boolean-type-hint-positional-argument/) SOME RULES JUST NEED TO BE DISABLED
     "T201",         # print found
 ]

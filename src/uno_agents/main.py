@@ -1,7 +1,12 @@
 """Module with main entrypoint for the agents."""
 
+import secrets
+
+import click
+
 from uno_agents.classes.dealer import Dealer
 from uno_agents.classes.player import GeneralPlayer, RandomPlayer
+from uno_agents.collections.names import player_names
 from uno_agents.utils.logger import init_logger
 
 logger = init_logger("")
@@ -13,7 +18,10 @@ logger = init_logger("")
 #   6. Make the first LLM player.
 #   7. Create a documentation
 
-def main(number_of_players: int) -> None:
+@click.command()
+# @click.argument("number_of_players", type=int)
+# def main(number_of_players: int) -> None:
+def main() -> None:
     """Main entrypoint for the game.
 
     We are going to start the game with a dealer. Then we determine the positions of players.
@@ -24,14 +32,73 @@ def main(number_of_players: int) -> None:
     Args:
         number_of_players (int): total number of players to be in the game.
     """
+    click.echo("Welcome to the game of UNO!")
+
+    # Enter all the inputs
+    number_of_players = click.prompt(
+        "How many players would you like to create?",
+        default=5,
+        type=click.IntRange(2, 10),
+    )
+    click.echo(f"Game is going to have {number_of_players} players")
+
+    enter_players_manually = click.prompt(
+        "Would you like to define players manually?",
+        default=False,
+        type=bool,
+    )
+    click.echo(f"You are going to define players manually: {enter_players_manually}")
+
+    # List of players
+    players = []
+
+    if enter_players_manually:
+        # This is going to be the role of ID
+        player_id = 0
+        while player_id < number_of_players:
+            click.echo("=" * 50)
+            click.echo(f"\tCollecting information about player {player_id}")
+            player_name = click.prompt(
+                "Enter player's name",
+                default=secrets.choice(player_names),
+                type=str,
+            )
+            player_type = click.prompt(
+                "Enter player's type",
+                show_choices=True,
+                type=click.Choice(
+                    ["GeneralPlayer", "RandomPlayer", "AgentPlayer"],
+                    case_sensitive=True,
+                ),
+            )
+
+            match player_type:
+                case "GeneralPlayer":
+                    click.echo("Creating general player")
+                    players.append(GeneralPlayer(player_id=player_id, name=player_name))
+
+                case "RandomPlayer":
+                    click.echo("Creating random player")
+                    players.append(RandomPlayer(player_id=player_id, name=player_name))
+
+                case "AgentPlayer":
+                    click.echo("Creating an agent player")
+                    raise NotImplementedError("AgentPlayer class has not been implemented yet")
+
+                case _:
+                    click.echo("Unknown player type: {player_type}. Try again.")
+                    continue
+    else:
+        for i in range(number_of_players-1):
+            players.append(GeneralPlayer(i))
+        players.append(RandomPlayer(player_id=i+1, name="Mr Random"))
+
     # Create a dealer
     dealer = Dealer()
 
-    # Initialize all the players. Each player is going to have a unique integer ID
-    # starting from 0.
-    for i in range(number_of_players-1):
-        dealer.add_player(GeneralPlayer(i))
-    dealer.add_player(RandomPlayer(player_id=i+1, name="Mr Random"))
+    # Add players to the dealer
+    for player in players:
+        dealer.add_player(player)
     logger.debug(dealer)
 
     # Play the game
