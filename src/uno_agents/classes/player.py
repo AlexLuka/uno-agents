@@ -148,6 +148,8 @@ class RandomPlayer(BasePlayer):
 
         Args:
             current_card: current card at the top of discard pile.
+            *args: pass additional arguments that may or may not be used by the player
+            **kwargs: pass additional arguments that may or may not be used by the player
 
         Returns:
             Card to play or None if no card to pick. Also must say something of play wild card.
