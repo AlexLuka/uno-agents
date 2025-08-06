@@ -77,15 +77,20 @@ class GeneralPlayer(BasePlayer):
         """Docstring."""
         super().__init__(player_id=player_id, name=name)
 
-    def play_card(self, current_card: Card) -> Card:
+    def play_card(self, current_card: Card, *args: list, **kwargs: dict) -> Card:
         """Method to select a card to play.
 
         Args:
             current_card: current card at the top of discard pile.
+            *args: pass additional arguments that may or may not be used by the player
+            **kwargs: pass additional arguments that may or may not be used by the player
 
         Returns:
             Card to play or None if no card to pick. Also must say something of play wild card.
         """
+        logger.debug("args=%s", args)
+        logger.debug("kwargs=%s", kwargs)
+
         # List all the cards that are currently playable
         playable_cards = []
         colors_need = {
@@ -138,7 +143,7 @@ class GeneralPlayer(BasePlayer):
 class RandomPlayer(BasePlayer):
     """Class for a player that randomly selects a card to play."""
 
-    def play_card(self, current_card: Card) -> Card:
+    def play_card(self, current_card: Card, *args: list, **kwargs: dict) -> Card:
         """Method to select a card to play.
 
         Args:
@@ -147,6 +152,9 @@ class RandomPlayer(BasePlayer):
         Returns:
             Card to play or None if no card to pick. Also must say something of play wild card.
         """
+        logger.debug("args=%s", args)
+        logger.debug("kwargs=%s", kwargs)
+
         # List all the cards that are currently playable
         playable_cards = []
 
@@ -166,3 +174,21 @@ class RandomPlayer(BasePlayer):
         index =  choice(playable_cards)
 
         return self.cards.pop(index)
+
+
+class AgentGeminiFlash25(BasePlayer):
+    """Class to implement agent player.
+
+    This class is going to use Gemini 2.5 Flash as the base llm model.
+    I am thinking that every new agent is going to use specific LLM.
+    However the prompt must be reusable and passed externally to the
+    agent. In that case we will be able to pass the whole history of
+    the cards, and make a decision more adequately.
+    """
+
+    def play_card(self, current_card: Card, *args: list, **kwargs: dict) -> Card:
+        """Docstring to be updated.
+
+        *args: pass additional arguments that may or may not be used by the player
+        **kwargs: pass additional arguments that may or may not be used by the player
+        """
