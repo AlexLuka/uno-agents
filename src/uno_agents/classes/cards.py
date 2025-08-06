@@ -73,7 +73,12 @@ class Card(BaseModel):
 
     def __repr__(self) -> str:
         """Method to get unambiguous representation."""
-        return f"Card(type={self.card_type.value},color={self.color.value},value={self.value})"
+        return (
+            f"Card(type={self.card_type.value},"
+            f"color={self.color.value},"
+            f"value={self.value},"
+            f"is_action={self.is_action})"
+        )
 
 
 class Deck(list):

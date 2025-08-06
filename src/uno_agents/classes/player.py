@@ -191,6 +191,15 @@ class AgentGeminiFlash25(BasePlayer):
     def play_card(self, current_card: Card, *args: list, **kwargs: dict) -> Card:
         """Docstring to be updated.
 
-        *args: pass additional arguments that may or may not be used by the player
-        **kwargs: pass additional arguments that may or may not be used by the player
+        This method aims to select the next card. What we plan to do with the agent (agent?)
+        is to pass all the required information to it and allow it to make a decision. The
+        decision must be validated after the move is made!
+
+        Args:
+            current_card: current card at the top of the discard deck
+            *args: pass additional arguments that may or may not be used by the player
+            **kwargs: pass additional arguments that may or may not be used by the player
+
+        Returns:
+            One of the cards from a player's hand that is placed on top of the current card.
         """
