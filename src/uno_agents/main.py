@@ -89,6 +89,8 @@ def main() -> None:
                     click.echo("Unknown player type: {player_type}. Try again.")
                     continue
     else:
+        # This is going to be the default setting. We basically going to have general players,
+        # plus one random one.
         for i in range(number_of_players-1):
             players.append(GeneralPlayer(i))
         players.append(RandomPlayer(player_id=i+1, name="Mr Random"))
