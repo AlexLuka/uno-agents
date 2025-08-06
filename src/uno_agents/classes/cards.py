@@ -4,6 +4,8 @@ import logging
 from collections import UserList
 from enum import Enum, unique
 
+from pydantic import BaseModel, computed_field
+
 logger = logging.getLogger(__name__)
 
 
@@ -39,29 +41,31 @@ class CardType(Enum):
     N9 = "9"
 
 
-class Card:
+class Card(BaseModel):
     """Card object to keep track of cards and their values."""
 
-    color: CardColor   # also called suit
-    value: int
-    card_type: CardType    # number, skip, draw two, reverse, wild, wild 4.
-    is_action: bool         # Check if this attribute is use anywhere later
+    color: CardColor        # also called suit
+    card_type: CardType     # number, skip, draw two, reverse, wild, wild 4.
 
-    def __init__(self, color: CardColor, card_type: CardType) -> None:
-        """Initialize the Card object with its value."""
-        self.color = color
-        self.card_type = card_type
-
-        # Assign value and is_action flag
+    @computed_field
+    @property
+    def value(self) -> int:
+        """Property to compute a value of a card."""
         if self.card_type in {CardType.WILD, CardType.WILD4}:
-            self.value = 50
-            self.is_action = True
-        elif self.card_type in {CardType.SKIP, CardType.DRAW2, CardType.REV}:
-            self.value = 20
-            self.is_action = True
-        else:
-            self.value = int(self.card_type.value)
-            self.is_action = False
+            return 50
+
+        if self.card_type in {CardType.SKIP, CardType.DRAW2, CardType.REV}:
+            return 20
+
+        return int(self.card_type.value)
+
+    @computed_field
+    @property
+    def is_action(self) -> bool:
+        """Property to determine if card is an action card."""
+        return self.card_type in {
+            CardType.WILD, CardType.WILD4, CardType.SKIP, CardType.DRAW2, CardType.REV,
+        }
 
     def __str__(self) -> str:
         """Method to get human-readable representation of a card."""
